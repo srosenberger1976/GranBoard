@@ -1511,42 +1511,59 @@ function processHit(matrixKey) {
       return; 
     }
   }
-  // =========================================================================
-  // --- 3. SPLIT SCORE LOGIK (DYNAMISCH) ---
-  // =========================================================================
-  else if(currentSessionMode === 'split') {
-    const splitModus = parseInt(document.getElementById('split-start')?.value) || 12;
-    const aktuelleRunde = Math.floor((p.totalDarts - 1) / 3) + 1;
- 
-    const spielplaene = {
-      12: { 1: { v: 12, m: 1 }, 2: { v: 13, m: 1 }, 3: { v: 14, m: 1 }, 4: { v: 0, m: 2 }, 5: { v: 15, m: 1 }, 6: { v: 16, m: 1 }, 7: { v: 17, m: 1 }, 8: { v: 0, m: 3 }, 9: { v: 18, m: 1 }, 10: { v: 19, m: 1 }, 11: { v: 20, m: 1 }, 12: { v: 25, m: 1 }, 13: { v: 25, m: 2 } },
-      15: { 1: { v: 15, m: 1 }, 2: { v: 16, m: 1 }, 3: { v: 0, m: 2 }, 4: { v: 17, m: 1 }, 5: { v: 18, m: 1 }, 6: { v: 0, m: 3 }, 7: { v: 19, m: 1 }, 8: { v: 20, m: 1 }, 9: { v: 25, m: 1 }, 10: { v: 25, m: 2 } }
-    };
- 
-    const ziel = spielplaene[splitModus][aktuelleRunde];
-    let isCorrectHit = false;
-    if (ziel) {
-      if (ziel.v === 0) {
-        if (hit.m === ziel.m) isCorrectHit = true;
-      } else if (ziel.v === 25 && ziel.m === 1) {
-        if (hit.v === 25) isCorrectHit = true;
-      } else {
-        if (hit.v === ziel.v && hit.m === ziel.m) isCorrectHit = true;
+    // =========================================================================
+    // --- 3. SPLIT SCORE LOGIK (TRIPLE & DOUBLE TREFFER ERLAUBT!) ---
+    // =========================================================================
+    else if(currentSessionMode === 'split') {
+      const splitModus = parseInt(document.getElementById('split-start')?.value) || 12;
+      const aktuelleRunde = Math.floor((p.totalDarts - 1) / 3) + 1;
+   
+      const spielplaene = {
+        12: { 
+          1: { v: 12, m: 1 }, 2: { v: 13, m: 1 }, 3: { v: 14, m: 1 }, 4: { v: 0, m: 2 }, 
+          5: { v: 15, m: 1 }, 6: { v: 16, m: 1 }, 7: { v: 17, m: 1 }, 8: { v: 0, m: 3 }, 
+          9: { v: 18, m: 1 }, 10: { v: 19, m: 1 }, 11: { v: 20, m: 1 }, 12: { v: 25, m: 1 }, 13: { v: 25, m: 2 } 
+        },
+        15: { 
+          1: { v: 15, m: 1 }, 2: { v: 16, m: 1 }, 3: { v: 0, m: 2 }, 4: { v: 17, m: 1 }, 
+          5: { v: 18, m: 1 }, 6: { v: 0, m: 3 }, 7: { v: 19, m: 1 }, 8: { v: 20, m: 1 }, 
+          9: { v: 25, m: 1 }, 10: { v: 25, m: 2 } 
+        }
+      };
+   
+      const ziel = spielplaene[splitModus][aktuelleRunde];
+      let isCorrectHit = false;
+      
+      if (p.roundHitsThisTurn === undefined) {
+        p.roundHitsThisTurn = 0;
       }
-    }
+      
+      if (ziel) {
+        if (ziel.v === 0) {
+          // Sonderrunden: Beliebiges DOPPEL (m===2) oder Beliebiges TRIPLE (m===3)
+          if (hit.m === ziel.m) isCorrectHit = true;
+        } else if (ziel.v === 25 && ziel.m === 1) {
+          // Runde BULL: Erlaubt sowohl Single Bull (m=1) als auch Double Bull (m=2)
+          if (hit.v === 25) isCorrectHit = true;
+        } else if (ziel.v === 25 && ziel.m === 2) {
+          // Die finale D-BULL Abschlussrunde benötigt zwingend das Double Bull!
+          if (hit.v === 25 && hit.m === 2) isCorrectHit = true;
+        } else {
+          // KORREKTUR: Für normale Zahlenrunden reicht es, wenn die ZAHL stimmt!
+          // Ein Treffer im Double oder Triple zählt voll mit!
+          if (hit.v === ziel.v) isCorrectHit = true;
+        }
+      }
+      
     if (isCorrectHit) {
-      p.score += points; 
-      if (!p.roundHitsThisTurn) p.roundHitsThisTurn = 0;
-      p.roundHitsThisTurn++; 
-      logHistory(` Treffer! +${points} PTS`); 
+        p.score += points; // Fügt den echten Wert des Wurfs hinzu (z.B. 39 Punkte bei T13!)
+        p.roundHitsThisTurn++; 
+        logHistory(` Treffer! +${points} PTS`); 
     } else {
-      logHistory(` Vorbeigeworfen`); 
+        logHistory(` Vorbeigeworfen`); 
     }
-  }
 
-  // =========================================================================
-  // --- 4. INTEGRATION DER SOUND- & SPRACH-ENGINE (ZENTRAL AM ENDE) ---
-  // =========================================================================
+    }
   if (!isX01Win) {
     try {
       let soundFile = "";
@@ -1605,9 +1622,10 @@ function processHit(matrixKey) {
     }
   }
 
-  // Punkte vor dem ersten Wurf merken (für potenziellen Bust)
+  // Punkte vor dem ersten Wurf merken (für potenziellen Bust) & Trefferzähler zurücksetzen
   if (dartsThrownThisTurn === 1) {
     p.scoreAtStartOfTurn = (currentSessionMode === 'x01' || currentSessionMode === 'x01_teams') ? (p.score + points) : p.score;
+
   }
  
   logHistory(`${p.name}: ${hit.t} ${hit.v} (${points} Pkt)`);
@@ -1615,35 +1633,60 @@ function processHit(matrixKey) {
   // Display aktualisieren
   updateHud();
 
-  // --- RUNDENENDE PRÜFEN ---
+  // --- RUNDENENDE PRÜFEN (REPARIERT OHNE CODESYNTAX-FEHLER) ---
   if (dartsThrownThisTurn >= 3) { 
     if (currentSessionMode === 'split') {
-      const mindestPfeile = parseInt(document.getElementById('split-start')?.value) || 12;
-      if (!p.roundHitsThisTurn || p.roundHitsThisTurn === 0) {
-        if (p.totalDarts > mindestPfeile) {
+      
+      // KORREKTUR: Name zusammengeschrieben, damit JavaScript nicht abstürzt!
+      const hatteTreffer = p.roundHitsThisTurn > 0;
+      
+      if (!hatteTreffer) {
+        // Zeitverzögerte Explosion nur, wenn wirklich KEIN Treffer in der aktiven Runde vorlag
+        setTimeout(() => {
           const altePunktzahl = p.score;
           p.score = Math.round(p.score / 2);
- 
+
           const exploContainer = document.createElement('div');
           exploContainer.className = 'split-explosion-overlay';
           exploContainer.innerHTML = `<div class="explosion-number">${altePunktzahl}<br><span style="font-size:4vw; color:#fff;"> ZERPLATZT AUF ${p.score} </span></div>`;
           document.body.appendChild(exploContainer);
- 
-          setTimeout(() => { exploContainer.remove(); }, 2000);
-          logHistory(` Keine Treffer! ${p.name} fällt auf ${p.score}`);
-        } else {
-          logHistory(` Keine Treffer, aber geschützt vor Pfeil ${mindestPfeile}`);
-        }
+
+          let bustSound = localStorage.getItem('mkk_sound_bust') || 'überworfen.wav';
+          new Audio(bustSound).play().catch(e => {});
+
+          setTimeout(() => { 
+            if(exploContainer) exploContainer.remove(); 
+          }, 2000);
+
+          logHistory(` 💥 Keine Treffer! ${p.name} fällt auf ${p.score}`);
+          updateHud();
+        }, 1200);
+        
+        // Spielerwechsel nach der Explosion (3,5 Sekunden)
+        setTimeout(() => {
+          p.roundHitsThisTurn = 0; 
+          triggerTurnChange();
+        }, 3500);
+
+      } else {
+        // Ein Treffer lag vor! Keine Explosion, Werte bleiben sicher erhalten
+        logHistory(` 👍 Runde beendet. ${p.name} sichert sich ${p.score} Punkte!`);
+        updateHud();
+        
+        // Normaler Spielerwechsel nach 2 Sekunden
+        setTimeout(() => {
+          p.roundHitsThisTurn = 0; 
+          triggerTurnChange();
+        }, 2000);
       }
-      p.roundHitsThisTurn = 0;
+    } else {
+      // Normaler Spielerwechsel für X01 und Cricket
+      setTimeout(() => {
+        triggerTurnChange();
+      }, 2000);
     }
- 
-    triggerTurnChange(); 
   }
 }
-
-
-
 
 
 function triggerTurnChange() {
