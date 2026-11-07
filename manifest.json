@@ -1,21 +1,24 @@
 {
-  "short_name": "GranBoard3D",
   "name": "GranBoard 3D Training Pro",
-  "icons": [
-    {
-      "src": "icon-192.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "icon-512.png",
-      "type": "image/png",
-      "sizes": "512x512"
-    }
-  ],
-  "start_url": "./index.html",
+  "short_name": "GranBoard 3D",
+  "description": "3D Dart-Trainingsprogramm für das GranBoard",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
   "background_color": "#0f111a",
   "theme_color": "#00f0ff",
-  "display": "standalone",
-  "orientation": "landscape"
+  "orientation": "landscape",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
+
