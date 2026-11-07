@@ -314,26 +314,43 @@ body {
         .player-card .p-score { font-family: 'Orbitron', sans-serif; color: var(--accent-cyan); font-size: 20px; }
    
 
-/* Riesiges Treffer-Pop-up in der Mitte */
+/* Riesiges Treffer-Pop-up mit solidem Kasten-Hintergrund */
 .hit-popup {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0.5);
-    font-family: 'Orbitron', sans-serif;
-    font-size: 130px;
-    font-weight: 900;
-    color: var(--accent-green);
-    text-shadow: 0 0 30px rgba(57,255,20,0.8), 0 0 50px rgba(57,255,20,0.5);
-    z-index: 999;
-    pointer-events: none;
-    opacity: 0;
-    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+ position: fixed;
+ top: 50%;
+ left: 50%;
+ /* Startzustand: Nach unten verschoben, klein und unsichtbar */
+ transform: translate(-50%, -20%) scale(0.1);
+ font-family: 'Orbitron', sans-serif;
+ font-size: 200px; /* Perfekte Größe, damit der Kasten nicht den ganzen Bildschirm blockiert */
+ font-weight: 900;
+ color: #39ff14; /* Pures, sattes Neongrün */
+ 
+ /* DER KASTEN: Komplett blickdicht (0.95), extrem dunkel mit Cyberpunk-Rahmen */
+ background: rgba(5, 7, 15, 0.98); 
+ border: 4px solid #00f0ff; /* Stechender, cyanfarbener Rahmen */
+ border-radius: 20px;
+ padding: 20px 60px;
+ min-width: 450px;
+ text-align: center;
+ 
+ /* Extreme Leuchteffekte für Rahmen und Text für maximale Sichtbarkeit */
+ box-shadow: 0 0 50px rgba(0, 240, 255, 0.6), inset 0 0 30px rgba(0, 240, 255, 0.3);
+ text-shadow: 0 0 25px rgba(57, 255, 20, 1), 0 0 50px rgba(57, 255, 20, 0.8);
+ 
+ z-index: 99999; /* Überlagert absolut alles */
+ pointer-events: none;
+ opacity: 0;
+ transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
+
+/* Zielzustand: Schießt voll deckend in den Fokus */
 .hit-popup.show {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+ opacity: 1 !important;
+ transform: translate(-50%, -50%) scale(1);
 }
+
+
 
 
 /* --- OVERLAY FENSTER FÜR SPIELERAUSWAHL --- */
@@ -521,89 +538,73 @@ body {
  <i class="fa-solid fa-xmark"></i> Einstellungen schließen
  </button>
  
+ <!-- DIE SIDEBAR INHALTE -->
  <h1><i class="fa-solid fa-crosshairs"></i> GranBoard 3D</h1>
- <button id="btnConnect" class="btn-primary"><i class="fa-solid fa-bluetooth"></i> Board Verbinden</button>
  
+ <!-- 1. BOARD VERBINDEN -->
+ <button id="btnConnect" class="btn-primary">
+   <strong>1.</strong> <i class="fa-solid fa-bluetooth"></i> Board Verbinden
+ </button>
+
+ <!-- 2. SPIELER AUSWÄHLEN (Hierher verschoben!) -->
+ <div class="section-box" style="margin-bottom: 15px;">
+   <div class="section-title"><i class="fa-solid fa-users"></i> Trainingsteilnehmer</div>
+   <button type="button" onclick="openPlayerModal()" style="width: 100%; background: linear-gradient(135deg, #111424 0%, #1b223c 100%); border: 1px solid var(--accent-cyan); color: var(--accent-cyan); font-weight: bold; padding: 12px; cursor: pointer; box-shadow: 0 0 10px rgba(0,240,255,0.1); margin-bottom: 0; font-family: 'Orbitron'; font-size: 13px;">
+     <strong>2.</strong> <i class="fa-solid fa-user-gear"></i> SPIELER AUSWÄHLEN 👥
+   </button>
+ </div>
+
  <!-- UPGRADED SETUP PANEL -->
  <div class="section-box" id="setup-panel">
- <div class="section-title"><i class="fa-solid fa-sliders"></i> Training-Setup</div>
- 
- <label>Spielmodus</label>
-<select id="game-mode" onchange="toggleGameModeOptions()">
- <option value="x01">301 - 1001 (Einzelspieler)</option>
- <option value="x01_teams">301 - 1001 (Team-Modus)</option> <!-- NEU -->
- <option value="cricket">Klassik Cricket (15 - Bull)</option>
- <option value="maxicricket">Maxi Cricket (10 - Bull)</option>
- <option value="split">Split Score</option>
-</select>
+   <div class="section-title"><i class="fa-solid fa-sliders"></i> Training-Setup</div>
+   <label>Spielmodus</label>
+   <select id="game-mode" onchange="toggleGameModeOptions()">
+     <option value="x01">301 - 1001 (Einzelspieler)</option>
+     <option value="x01_teams">301 - 1001 (Team-Modus)</option>
+     <option value="cricket">Klassik Cricket (15 - Bull)</option>
+     <option value="maxicricket">Maxi Cricket (10 - Bull)</option>
+     <option value="split">Split Score</option>
+   </select>
 
+   <!-- X01 OPTIONEN -->
+   <div id="x01-options">
+     <label>Punkte-Ziel</label>
+     <select id="x01-target">
+       <option value="301">301</option>
+       <option value="501" selected>501</option>
+       <option value="701">701</option>
+       <option value="1001">1001</option>
+     </select>
+     <label>Einwurf (In)</label>
+     <select id="x01-in">
+       <option value="open">Open In</option>
+       <option value="double">Double In</option>
+       <option value="master">Master In</option>
+     </select>
+     <label>Auswurf (Out)</label>
+     <select id="x01-out">
+       <option value="open">Open Out</option>
+       <option value="double" selected>Double Out</option>
+       <option value="master">Master Out</option>
+     </select>
+   </div>
 
- <!-- X01 OPTIONEN -->
- <div id="x01-options">
- <label>Punkte-Ziel</label>
- <select id="x01-target"><option value="301">301</option><option value="501" selected>501</option><option value="701">701</option><option value="1001">1001</option></select>
- <label>Einwurf (In)</label>
- <select id="x01-in"><option value="open">Open In</option><option value="double">Double In</option><option value="master">Master In</option></select>
- <label>Auswurf (Out)</label>
- <select id="x01-out"><option value="open">Open Out</option><option value="double" selected>Double Out</option><option value="master">Master Out</option></select>
- </div>
-
- <!-- SPLIT SCORE OPTIONEN -->
- <div id="split-options" style="display: none;">
- <label>Pfeilwechsel-Kürzung</label>
- <select id="split-start"><option value="12">Ab Pfeil 12</option><option value="15">Ab Pfeil 15</option></select>
- </div>
-
-
- <!-- SOUND OPTIONS -->
-  <div class="section-title" style="margin-top: 20px;"><i class="fa-solid fa-volume-high"></i> Sound-Konfiguration</div>
-
-  <label>Single Treffer</label>
-  <input type="text" id="sound_Single_Input" onchange="saveSoundSettings()">
-
-  <label>Double Treffer</label>
-  <input type="text" id="sound_Double_Input" onchange="saveSoundSettings()">
-
-  <label>Triple Treffer</label>
-  <input type="text" id="sound_Triple_Input" onchange="saveSoundSettings()">
-
-  <label>Triple 20 Spezial</label>
-  <input type="text" id="sound_T20_Input" onchange="saveSoundSettings()">
-
-  <label>Single Bull</label>
-  <input type="text" id="sound_SingleBull_Input" onchange="saveSoundSettings()">
-
-  <label>Double Bull (Bullseye)</label>
-  <input type="text" id="sound_DoubleBull_Input" onchange="saveSoundSettings()">
-
-  <label>Bust (Überworfen)</label>
-  <input type="text" id="sound_Bust_Input" onchange="saveSoundSettings()">
-
-  <label>Spielerwechsel</label>
-  <input type="text" id="sound_Change_Input" onchange="saveSoundSettings()">
-
-  <label>Gewonnen (Sieg)</label>
-  <input type="text" id="sound_Win_Input" onchange="saveSoundSettings()">
-  <!-- ENDE DES NEUEN BLOCKS -->
-
-
-
-
-
+   <!-- SPLIT SCORE OPTIONEN -->
+   <div id="split-options" style="display: none;">
+     <label>Pfeilwechsel-Kürzung</label>
+     <select id="split-start">
+       <option value="12">Ab Pfeil 12</option>
+       <option value="15">Ab Pfeil 15</option>
+     </select>
+   </div>
  </div> 
 
- <!-- MITGLIEDER AUSWAHL (JETZT ALS REINER POPUP-TRIGGER) -->
+ <!-- 3. TRAINING STARTEN -->
  <div class="section-box">
-     <div class="section-title"><i class="fa-solid fa-users"></i> Trainingsteilnehmer</div>
-     
-     <button type="button" onclick="openPlayerModal()" style="width: 100%; background: linear-gradient(135deg, #111424 0%, #1b223c 100%); border: 1px solid var(--accent-cyan); color: var(--accent-cyan); font-weight: bold; padding: 12px; cursor: pointer; box-shadow: 0 0 10px rgba(0,240,255,0.1); margin-bottom: 15px; font-family: 'Orbitron'; font-size: 13px;">
-         <i class="fa-solid fa-user-gear"></i> 👥 SPIELER AUSWÄHLEN
-     </button>
-     
-<!-- START-BUTTON: Standardmäßig rot und gesperrt -->
-<button id="btnStartGame" onclick="initTrainingSession()" disabled style="background: linear-gradient(135deg, #990000 0%, #ff3333 100%); color: #fff; font-weight: bold; cursor: not-allowed; opacity: 0.9;">Spieler wählen</button>
-
-
+   <!-- START-BUTTON: Ändert dynamisch Text und Farbe via JavaScript -->
+   <button id="btnStartGame" onclick="initTrainingSession()" disabled style="background: linear-gradient(135deg, #990000 0%, #ff3333 100%); color: #fff; font-weight: bold; cursor: not-allowed; opacity: 0.9; margin-bottom: 0;">
+     <strong>3.</strong> Spieler wählen
+   </button>
  </div>
 
 
@@ -939,30 +940,28 @@ function renderMembersListSidebar() {
 
 
 function checkStartButtonLive() {
-    const startBtn = document.getElementById('btnStartGame');
-    if (startBtn) {
-        // Wir zählen direkt auf den echten Checkboxen im Dokument, wie viele angehakt sind
-        const ausgewaehlteSpieler = document.querySelectorAll('.member-checkbox:checked').length;
-        
-        if (ausgewaehlteSpieler > 0) {
-            // Mindestens 1 Spieler gewählt -> GRÜN & FREIGEGEBEN
-            startBtn.disabled = false;
-            startBtn.innerText = "Training Starten";
-            startBtn.style.background = "linear-gradient(135deg, #009900 0%, #39ff14 100%)";
-            startBtn.style.color = "#000";
-            startBtn.style.cursor = "pointer";
-            startBtn.style.opacity = "1";
-        } else {
-            // Kein Spieler ausgewählt -> ROT & GESPERRT
-            startBtn.disabled = true;
-            startBtn.innerText = "Spieler wählen";
-            startBtn.style.background = "linear-gradient(135deg, #990000 0%, #ff3333 100%)";
-            startBtn.style.color = "#fff";
-            startBtn.style.cursor = "not-allowed";
-            startBtn.style.opacity = "0.9";
-        }
-    }
+ const startBtn = document.getElementById('btnStartGame');
+ if (startBtn) {
+ const ausgewaehlteSpieler = document.querySelectorAll('.member-checkbox:checked').length;
+ 
+ if (ausgewaehlteSpieler > 0) {
+ startBtn.disabled = false;
+ startBtn.innerHTML = "<strong>3.</strong> Training Starten"; // <-- HIER ERGÄNZEN
+ startBtn.style.background = "linear-gradient(135deg, #009900 0%, #39ff14 100%)";
+ startBtn.style.color = "#000";
+ startBtn.style.cursor = "pointer";
+ startBtn.style.opacity = "1";
+ } else {
+ startBtn.disabled = true;
+ startBtn.innerHTML = "<strong>3.</strong> Spieler wählen"; // <-- HIER ERGÄNZEN
+ startBtn.style.background = "linear-gradient(135deg, #990000 0%, #ff3333 100%)";
+ startBtn.style.color = "#fff";
+ startBtn.style.cursor = "not-allowed";
+ startBtn.style.opacity = "0.9";
+ }
+ }
 }
+
 
 
 
@@ -1598,24 +1597,27 @@ function processHit(matrixKey) {
  const audio = new Audio(soundFile);
  audio.play().catch(e => console.log("Audio blockiert:", e));
  }
-
- // Deutsche Sprachausgabe
- if (!isX01Bust && p.score !== 0) {
- let speechText = "";
- if (hit.v === 0) speechText = "Fehlwurf";
- else if (hit.v === 25) speechText = hit.m === 2 ? "Doppel Bull" : "Bullseye";
- else {
- let prefixText = hit.m === 3 ? "Dreifach " : (hit.m === 2 ? "Doppel " : "");
- speechText = `${prefixText}${hit.v}`;
- }
- const utterance = new SpeechSynthesisUtterance(speechText);
- utterance.lang = 'de-DE';
- utterance.rate = 1.25; 
- window.speechSynthesis.speak(utterance);
- }
- } catch(audioErr) {
- console.error("Audio-Fehler in Spiellogik:", audioErr);
- }
+// Deutsche Sprachausgabe (Wird auf GitHub automatisch stummgeschaltet!)
+if (!isX01Bust && p.score !== 0) {
+  if (window.location.hostname.includes('github.io')) {
+    console.log("GitHub Pages erkannt: Sprachausgabe unterdrückt, nutze nur WAV-Dateien.");
+  } else {
+    let speechText = "";
+    if (hit.v === 0) speechText = "Fehlwurf";
+    else if (hit.v === 25) speechText = hit.m === 2 ? "Doppel Bull" : "Bullseye";
+    else {
+      let prefixText = hit.m === 3 ? "Dreifach " : (hit.m === 2 ? "Doppel " : "");
+      speechText = `${prefixText}${hit.v}`;
+    }
+    const utterance = new SpeechSynthesisUtterance(speechText);
+    utterance.lang = 'de-DE';
+    utterance.rate = 1.25; 
+    window.speechSynthesis.speak(utterance);
+  }
+}
+} catch(audioErr) {
+  console.error("Audio-Fehler in Spiellogik:", audioErr);
+}
  }
 
  // Punkte vor dem ersten Wurf merken (für potenziellen Bust)
