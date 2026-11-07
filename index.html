@@ -1,0 +1,1921 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GranBoard 3D Training Pro</title>
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://googleapis.com" rel="stylesheet">
+    <link rel="stylesheet" href="https://cloudflare.com">
+    
+    <!-- Three.js für 3D Grafiken -->
+    <script src="https://cloudflare.com"></script>
+
+
+    <style>
+        :root {
+            --bg-dark: #0f111a;
+            --panel-bg: rgba(22, 27, 46, 0.85);
+            --accent-cyan: #00f0ff;
+            --accent-green: #39ff14;
+            --accent-gold: #ffaa00;
+            --text-light: #f0f4f8;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            margin: 0;
+            padding: 0;
+        }
+
+body {
+    font-family: 'Rajdhani', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    height: 100vh;
+    overflow: hidden;
+    display: block;
+    position: relative;
+}
+
+/* --- 3D CANVAS BACKGROUND --- */
+#canvas3d-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0; left: 0;
+    background: radial-gradient(circle at center, #1b223c 0%, #07090f 100%);
+    z-index: 1;
+}
+
+.sidebar {
+ position: fixed;
+ top: 0; 
+ left: 0; /* ÄNDERUNG: Startet jetzt direkt geöffnet im Bild! */
+ width: 380px;
+ height: 100vh;
+ background: rgba(10, 14, 28, 0.95);
+ border-right: 2px solid var(--accent-cyan);
+ padding: 20px;
+ display: flex;
+ flex-direction: column;
+ gap: 15px;
+ overflow-y: auto;
+ backdrop-filter: blur(15px);
+ box-shadow: 10px 0 30px rgba(0,0,0,0.7);
+ transition: left 0.4s ease-in-out;
+ z-index: 200;
+}
+
+
+.sidebar.open {
+    left: 0;
+}
+
+.settings-toggle-btn {
+ position: absolute;
+ top: 25px; 
+ left: 405px; /* Bleibt rechts neben der Sidebar */
+ width: auto; /* Wächst automatisch mit dem Text mit */
+ height: auto;
+ background: rgba(22, 27, 46, 0.9);
+ border: 2px solid var(--accent-cyan);
+ color: var(--accent-cyan);
+ border-radius: 6px; /* Schön abgerundete Ecken statt Kreis */
+ padding: 10px 18px; /* Innenabstand für den Text */
+ display: flex; align-items: center; justify-content: center;
+ gap: 8px; /* Abstand zwischen dem Zahnrad und dem Wort "MENÜ" */
+ font-family: 'Orbitron', sans-serif;
+ font-size: 16px; 
+ font-weight: bold;
+ letter-spacing: 1px;
+ cursor: pointer; pointer-events: auto;
+ box-shadow: 0 0 15px rgba(0,240,255,0.3);
+ transition: all 0.3s;
+ z-index: 150;
+}
+
+
+.settings-toggle-btn:hover {
+    transform: rotate(45deg) scale(1.1);
+    box-shadow: 0 0 25px var(--accent-cyan);
+}
+
+
+        h1, h2, h3 {
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+
+
+@keyframes pulse {
+    from { opacity: 0.4; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1.1); }
+}
+
+
+        h1 {
+            font-size: 20px;
+            color: var(--accent-cyan);
+            text-shadow: 0 0 10px rgba(0,240,255,0.4);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .section-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            color: var(--accent-gold);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Form Elements */
+        label { display: block; font-size: 12px; margin-bottom: 5px; color: #aaa; }
+        select, input, button {
+            width: 100%;
+            background: #111424;
+            border: 1px solid #2d3559;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: inherit;
+            font-size: 14px;
+            margin-bottom: 12px;
+            transition: all 0.3s;
+        }
+        select:focus, input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 8px rgba(0,240,255,0.3);
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #0055ff 0%, #00d2ff 100%);
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-family: 'Orbitron', sans-serif;
+        }
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,210,255,0.4);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #009900 0%, #39ff14 100%);
+            border: none; color: #000; font-weight: bold; cursor: pointer;
+        }
+        button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Members / Player Selection */
+        .member-entry {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .member-checkbox { width: auto; margin: 0; }
+
+        /* --- OVERLAYS ON 3D CANVAS --- */
+        .hud-overlay {
+            position: absolute;
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+            top: 0; left: 0;
+            padding: 25px;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+        }
+
+        .hud-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bt-status {
+            background: rgba(0,0,0,0.6);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            border: 1px solid #ff3333;
+            color: #ff3333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .bt-status.connected {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+            box-shadow: 0 0 10px rgba(57,255,20,0.3);
+        }
+
+        /* Giant Scoreboard for current player */
+        .main-score-panel {
+            background: rgba(5, 7, 15, 0.8);
+            border: 2px solid var(--accent-cyan);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            min-width: 250px;
+            box-shadow: 0 0 30px rgba(0,240,255,0.2);
+        }
+        .active-player-name {
+            font-size: 24px;
+            color: #fff;
+            font-weight: bold;
+        }
+        .giant-score {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 72px;
+            font-weight: 900;
+            color: var(--accent-green);
+            text-shadow: 0 0 20px rgba(57,255,20,0.5);
+            line-height: 1;
+            margin: 10px 0;
+        }
+
+        /* Darts Thrown in current Turn */
+        .dart-turn-display {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .dart-icon {
+            font-size: 20px;
+            color: #444;
+            text-shadow: none;
+            transition: all 0.3s;
+        }
+        .dart-icon.active {
+            color: var(--accent-gold);
+            text-shadow: 0 0 8px var(--accent-gold);
+        }
+
+        /* Banner for Next Player / Pull Darts */
+        #action-banner {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: linear-gradient(135deg, #ff0055 0%, #990000 100%);
+            padding: 20px 50px;
+            border-radius: 10px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px;
+            font-weight: 900;
+            color: #fff;
+            border: 3px solid #ff3333;
+            box-shadow: 0 0 40px rgba(255,0,85,0.6);
+            text-align: center;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+        }
+        #action-banner.show { transform: translate(-50%, -50%) scale(1); }
+
+        /* Player Rotation Grid at bottom */
+        .hud-bottom {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            width: 100%;
+        }
+        .player-card {
+            background: rgba(10,15,30,0.7);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 6px;
+            min-width: 140px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .player-card.active {
+            border-color: var(--accent-cyan);
+            background: rgba(0, 240, 255, 0.15);
+            box-shadow: 0 0 15px rgba(0,240,255,0.3);
+            transform: translateY(-5px);
+        }
+        .player-card .p-name { font-weight: bold; font-size: 16px; }
+        .player-card .p-score { font-family: 'Orbitron', sans-serif; color: var(--accent-cyan); font-size: 20px; }
+   
+
+/* Riesiges Treffer-Pop-up in der Mitte */
+.hit-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 130px;
+    font-weight: 900;
+    color: var(--accent-green);
+    text-shadow: 0 0 30px rgba(57,255,20,0.8), 0 0 50px rgba(57,255,20,0.5);
+    z-index: 999;
+    pointer-events: none;
+    opacity: 0;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.hit-popup.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+
+/* --- OVERLAY FENSTER FÜR SPIELERAUSWAHL --- */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(5, 7, 15, 0.85);
+    backdrop-filter: blur(8px);
+    display: none; /* Standardmäßig unsichtbar */
+    justify-content: center; align-items: center;
+    z-index: 2000;
+}
+.modal-overlay.open { display: flex; }
+.modal-content {
+    background: rgba(10, 14, 28, 0.99); /* Dunkler, edler Cyberpunk-Hintergrund */
+    border: 3px solid var(--accent-cyan);
+    box-shadow: 0 0 50px rgba(0,240,255,0.5);
+    border-radius: 16px;
+    width: 95vw; /* Nutzt 95% der gesamten Bildschirmbreite */
+    height: 90vh; /* Nutzt 90% der gesamten Bildschirmhöhe */
+    max-height: 90vh;
+    padding: 35px;
+    display: flex; 
+    flex-direction: column;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 12px; margin-bottom: 15px;
+}
+.modal-body {
+ overflow-y: auto;
+ flex-grow: 1;
+ padding-right: 5px;
+ margin-bottom: 20px;
+}
+
+.open-targets-hint {
+ font-size: 2vw; /* Passt sich der Bildschirmbreite an */
+ min-font-size: 16px; /* Verhindert, dass es auf sehr kleinen Handys unlesbar klein wird */
+ color: var(--accent-cyan);
+ opacity: 0.95;
+ margin-top: 1vh;
+ text-align: left;
+ letter-spacing: 1px;
+}
+.open-targets-hint strong {
+ color: var(--accent-gold);
+ text-shadow: 0 0 10px rgba(255,170,0,0.3);
+}
+/* Klasse für Zahlen, die bei allen Gegnern bereits zu sind */
+.target-blocked {
+ color: #ff3333 !important;
+ text-shadow: 0 0 10px rgba(255,51,51,0.5) !important;
+ text-decoration: line-through;
+}
+
+
+
+/* 1. Blinkender Neon-Pfeil (für Soft Cricket) */
+.active-arrow-neon {
+ display: inline-block;
+ font-size: 3.5vw;
+ color: var(--accent-cyan);
+ margin-left: 15px;
+ vertical-align: middle;
+ text-shadow: 0 0 10px var(--accent-cyan), 0 0 20px var(--accent-cyan);
+ animation: neonBlink 1s ease-in-out infinite alternate;
+}
+@keyframes neonBlink {
+ 0% { opacity: 0.2; text-shadow: 0 0 2px var(--accent-cyan); }
+ 100% { opacity: 1; text-shadow: 0 0 15px var(--accent-cyan), 0 0 25px #00f0ff; }
+}
+
+/* 2. Animiertes 3D-Monster (für Monster Cricket) */
+.monster-icon-3d {
+ display: inline-block;
+ font-size: 4.5vw;
+ margin-left: 15px;
+ vertical-align: middle;
+ filter: drop-shadow(0 0 15px #ff0055);
+ animation: monsterBreath 3s ease-in-out infinite alternate, monsterFloat 4s ease-in-out infinite alternate;
+ transform-style: preserve-3d;
+ perspective: 500px;
+}
+@keyframes monsterBreath {
+ 0% { transform: scale(1) rotateX(0deg) rotateY(0deg); filter: drop-shadow(0 0 10px #ff0055); }
+ 100% { transform: scale(1.12) rotateX(10deg) rotateY(-5deg); filter: drop-shadow(0 0 25px #ffaa00); }
+}
+@keyframes monsterFloat {
+ 0% { transform: translateY(0px); }
+ 100% { transform: translateY(-8px); }
+}
+
+
+
+/* Split Score Explosionsoverlay */
+/* Split Score Explosionsoverlay - WUCHTIGER & LANGSAMER */
+.split-explosion-overlay {
+ position: fixed;
+ top: 0; left: 0;
+ width: 100vw; height: 100vh;
+ background: rgba(20, 0, 5, 0.93); /* Dunkler, damit die Zahl extrem heraussticht */
+ display: flex; justify-content: center; align-items: center;
+ z-index: 9999;
+ backdrop-filter: blur(25px); /* Stärkerer Weichzeichner im Hintergrund */
+ font-family: 'Orbitron', sans-serif;
+ pointer-events: none;
+ animation: flashBackground 2.0s cubic-bezier(0.1, 0.8, 0.25, 1) forwards;
+}
+.explosion-number {
+ font-size: 8vw; /* Etwas kompakter, damit der Text garantiert nicht abschneidet */
+ font-weight: 900;
+ color: #ff2233;
+ text-align: center;
+ line-height: 1.2;
+ text-shadow: 0 0 30px #ff0044, 0 0 60px #ff0044, 0 0 100px #ff0044;
+ animation: shatterText 2.0s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+@keyframes flashBackground {
+ 0% { background: rgba(255, 0, 40, 0.85); }
+ 15% { background: rgba(15, 3, 8, 0.95); }
+ 90% { opacity: 1; }
+ 100% { opacity: 0; } /* Blendet am Ende weich aus */
+}
+@keyframes shatterText {
+ 0% { transform: scale(0.2) rotate(-5deg); opacity: 0; }
+ 10% { transform: scale(1.2) rotate(3deg); opacity: 1; }
+ 20% { transform: scale(1.0) rotate(0deg); }
+ 75% { transform: scale(1.15) rotate(1deg); opacity: 1; filter: blur(0px); }
+ 100% { transform: scale(1.8); opacity: 0; filter: blur(20px); }
+}
+
+
+/* Blinkender Team-Sperrhinweis */
+.team-lock-warning {
+    background: rgba(255, 0, 0, 0.2);
+    border: 2px solid #ff3333;
+    color: #ff3333;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 20px;
+    font-weight: bold;
+    font-family: 'Orbitron', sans-serif;
+    text-align: center;
+    margin-top: 15px;
+    text-shadow: 0 0 10px #ff3333;
+    animation: lockFlash 0.6s infinite alternate;
+}
+@keyframes lockFlash {
+    0% { opacity: 0.3; box-shadow: 0 0 5px rgba(255,51,51,0.2); }
+    100% { opacity: 1; box-shadow: 0 0 20px rgba(255,51,51,0.6); }
+}
+
+
+
+</style>
+</head>
+
+
+
+
+
+
+
+
+
+<body>
+<!-- BESCHRIFTETER MENÜ-TRIGGERKNOPF (RECHTSBÜNDIG) -->
+<div class="settings-toggle-btn" onclick="toggleSettingsMenu()" style="position: absolute; top: 20px; right: 30px; left: auto; background: rgba(0, 240, 255, 0.1); border: 2px solid var(--accent-cyan); color: var(--accent-cyan); padding: 10px 24px; font-family: 'Orbitron'; font-weight: 900; font-size: 16px; border-radius: 8px; cursor: pointer; letter-spacing: 2px; box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); transition: all 0.3s ease; z-index: 1000; width: auto; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='rgba(0, 240, 255, 0.25)'; this.style.boxShadow='0 0 25px rgba(0, 240, 255, 0.5)';" onmouseout="this.style.background='rgba(0, 240, 255, 0.1)'; this.style.boxShadow='0 0 15px rgba(0, 240, 255, 0.2)';">
+  <i class="fa-solid fa-gear"></i> MENÜ
+</div>
+
+
+
+ <!-- DIE SIDEBAR -->
+ <!-- DIE SIDEBAR -->
+ <div class="sidebar open" id="sliding-settings-menu">
+
+ <!-- Schließen-Knopf im Untermenü -->
+ <button style="background:#ff3333; margin-bottom: 5px; color:#fff;" onclick="toggleSettingsMenu()">
+ <i class="fa-solid fa-xmark"></i> Einstellungen schließen
+ </button>
+ 
+ <h1><i class="fa-solid fa-crosshairs"></i> GranBoard 3D</h1>
+ <button id="btnConnect" class="btn-primary"><i class="fa-solid fa-bluetooth"></i> Board Verbinden</button>
+ 
+ <!-- UPGRADED SETUP PANEL -->
+ <div class="section-box" id="setup-panel">
+ <div class="section-title"><i class="fa-solid fa-sliders"></i> Training-Setup</div>
+ 
+ <label>Spielmodus</label>
+<select id="game-mode" onchange="toggleGameModeOptions()">
+ <option value="x01">301 - 1001 (Einzelspieler)</option>
+ <option value="x01_teams">301 - 1001 (Team-Modus)</option> <!-- NEU -->
+ <option value="cricket">Klassik Cricket (15 - Bull)</option>
+ <option value="maxicricket">Maxi Cricket (10 - Bull)</option>
+ <option value="split">Split Score</option>
+</select>
+
+
+ <!-- X01 OPTIONEN -->
+ <div id="x01-options">
+ <label>Punkte-Ziel</label>
+ <select id="x01-target"><option value="301">301</option><option value="501" selected>501</option><option value="701">701</option><option value="1001">1001</option></select>
+ <label>Einwurf (In)</label>
+ <select id="x01-in"><option value="open">Open In</option><option value="double">Double In</option><option value="master">Master In</option></select>
+ <label>Auswurf (Out)</label>
+ <select id="x01-out"><option value="open">Open Out</option><option value="double" selected>Double Out</option><option value="master">Master Out</option></select>
+ </div>
+
+ <!-- SPLIT SCORE OPTIONEN -->
+ <div id="split-options" style="display: none;">
+ <label>Pfeilwechsel-Kürzung</label>
+ <select id="split-start"><option value="12">Ab Pfeil 12</option><option value="15">Ab Pfeil 15</option></select>
+ </div>
+ </div>
+
+ <!-- MITGLIEDER AUSWAHL (JETZT ALS REINER POPUP-TRIGGER) -->
+ <div class="section-box">
+     <div class="section-title"><i class="fa-solid fa-users"></i> Trainingsteilnehmer</div>
+     
+     <button type="button" onclick="openPlayerModal()" style="width: 100%; background: linear-gradient(135deg, #111424 0%, #1b223c 100%); border: 1px solid var(--accent-cyan); color: var(--accent-cyan); font-weight: bold; padding: 12px; cursor: pointer; box-shadow: 0 0 10px rgba(0,240,255,0.1); margin-bottom: 15px; font-family: 'Orbitron'; font-size: 13px;">
+         <i class="fa-solid fa-user-gear"></i> 👥 SPIELER AUSWÄHLEN
+     </button>
+     
+<!-- START-BUTTON: Standardmäßig rot und gesperrt -->
+<button id="btnStartGame" onclick="initTrainingSession()" disabled style="background: linear-gradient(135deg, #990000 0%, #ff3333 100%); color: #fff; font-weight: bold; cursor: not-allowed; opacity: 0.9;">Spieler wählen</button>
+
+
+ </div>
+
+
+ 
+ <!-- WURF-LIVE-LOG -->
+ <div class="section-box" style="flex-grow:1; display:flex; flex-direction:column;">
+ <div class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Wurfhistorie</div>
+ <div id="history-log" style="font-family:monospace; font-size:12px; overflow-y:auto; flex-grow:1; background:#07090f; padding:8px; border-radius:4px; max-height: 200px;">
+ Warte auf Trainingsstart...
+ </div>
+ </div>
+ </div>
+
+ <!-- 3D AREA AND HUD OVERLAYS (BEREINIGT) -->
+ <div id="canvas3d-container">
+ <div id="action-banner">PFEILE RAUSZIEHEN!</div>
+ 
+ <div class="hud-overlay">
+ <div class="hud-top" style="display: flex; flex-direction: column; width: 100%; align-items: center; gap: 15px;">
+ <div id="btStatusBox" class="bt-status" style="align-self: flex-start;"><i class="fa-solid fa-toggle-off"></i> Board Getrennt</div>
+ 
+ <!-- STANDARD 501 ANZEIGE -->
+ <div class="main-score-panel" id="main-scoreboard" style="display:none; width: 100%; max-width: 600px;">
+ <div class="active-player-name" id="hud-active-name" style="font-size: 32px;">-</div>
+ <div class="giant-score" id="hud-giant-score" style="font-size: 90px;">0</div>
+ <div class="dart-turn-display">
+ <i class="fa-solid fa-location-arrow dart-icon" id="dart-1"></i>
+ <i class="fa-solid fa-location-arrow dart-icon" id="dart-2"></i>
+ <i class="fa-solid fa-location-arrow dart-icon" id="dart-3"></i>
+ </div>
+ </div>
+
+ <!-- DAS MULTI-DISPLAY FÜR UNTEREINANDER (CRICKET & SPLIT SCORE) -->
+ <div id="cricket-matrix-hud" style="display:none; width: 100%; background: transparent;">
+ <div id="cricket-rows-container"></div>
+ </div>
+ </div>
+
+ <div style="height: 20px;"></div>
+ <div class="hud-bottom" id="hud-players-rotation" style="display:none;"></div>
+ </div>
+ </div>
+
+
+
+
+ <!-- DAS NEUE OVERLAY-FENSTER (JETZT IM ECHTEN VOLLBILD-LOOK) -->
+ <div class="modal-overlay" id="player-selection-modal">
+     <div class="modal-content">
+         <div class="modal-header">
+             <h2 style="font-size: 24px; color: var(--accent-gold); margin: 0;"><i class="fa-solid fa-users-gear"></i> Wer spielt heute mit?</h2>
+             <button type="button" onclick="closePlayerModal()" style="width: auto; background: transparent; border: none; color: #ff3333; font-size: 28px; cursor: pointer; margin: 0; padding: 0 5px;"><i class="fa-solid fa-xmark"></i></button>
+         </div>
+         
+         <!-- Mehrere Spalten nebeneinander für perfekte Übersicht bei vielen Spielern -->
+         <div class="modal-body" id="members-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; overflow-y: auto; flex-grow: 1; padding-right: 10px;">
+
+             <!-- Die Spieler werden hier automatisch geladen -->
+         </div>
+         
+         <div style="display: flex; gap: 20px; margin-top: 15px;">
+             <button type="button" onclick="addGuestPlayer()" style="background: rgba(255,170,0,0.15); border: 1px dashed var(--accent-gold); color: var(--accent-gold); font-weight: bold; margin: 0; padding: 12px; cursor: pointer; font-family: 'Orbitron';">
+                 <i class="fa-solid fa-user-plus"></i> GAST HINZUFÜGEN
+             </button>
+             <button type="button" onclick="closePlayerModal()" class="btn-primary" style="margin: 0; padding: 12px; cursor: pointer;">
+                 <i class="fa-solid fa-check"></i> AUSWAHL SPEICHERN
+             </button>
+         </div>
+     </div>
+ </div>
+
+
+
+
+
+
+
+
+
+
+
+ <script>
+ // ... Ab hier folgt dein kompletter restlicher <script>-Inhalt unverändert weiter!
+
+        // ==========================================
+        // 1. BLUETOOTH CONFIG & MATRIX (AUS DEINEM SYSTEM)
+        // ==========================================
+        const GRANBOARD_SERVICE_UUID = '442f1570-8a00-9a28-cbe1-e1d4212d53eb';
+        const GRANBOARD_CHAR_UUID    = '442f1571-8a00-9a28-cbe1-e1d4212d53eb';
+        
+        const EXACT_BOARD_MATRIX = {
+            "2.5": { v: 1, m: 1, t: "Single" }, "2.3": { v: 1, m: 1, t: "Single" }, "2.6": { v: 1, m: 2, t: "Double" }, "2.4": { v: 1, m: 3, t: "Triple" },
+            "9.2": { v: 2, m: 1, t: "Single" }, "9.1": { v: 2, m: 1, t: "Single" }, "8.2": { v: 2, m: 2, t: "Double" }, "9.0": { v: 2, m: 3, t: "Triple" },
+            "7.2": { v: 3, m: 1, t: "Single" }, "7.1": { v: 3, m: 1, t: "Single" }, "8.4": { v: 3, m: 2, t: "Double" }, "7.0": { v: 3, m: 3, t: "Triple" },
+            "0.5": { v: 4, m: 1, t: "Single" }, "0.1": { v: 4, m: 1, t: "Single" }, "0.6": { v: 4, m: 2, t: "Double" }, "0.3": { v: 4, m: 3, t: "Triple" },
+            "5.4": { v: 5, m: 1, t: "Single" }, "5.1": { v: 5, m: 1, t: "Single" }, "4.6": { v: 5, m: 2, t: "Double" }, "5.2": { v: 5, m: 3, t: "Triple" },
+            "1.3": { v: 6, m: 1, t: "Single" }, "1.0": { v: 6, m: 1, t: "Single" }, "4.4": { v: 6, m: 2, t: "Double" }, "1.1": { v: 6, m: 3, t: "Triple" },
+            "11.4": { v: 7, m: 1, t: "Single" }, "11.1": { v: 7, m: 1, t: "Single" }, "8.6": { v: 7, m: 2, t: "Double" }, "11.2": { v: 7, m: 3, t: "Triple" },
+            "6.5": { v: 8, m: 1, t: "Single" }, "6.2": { v: 8, m: 1, t: "Single" }, "6.6": { v: 8, m: 2, t: "Double" }, "6.4": { v: 8, m: 3, t: "Triple" },
+            "9.5": { v: 9, m: 1, t: "Single" }, "9.3": { v: 9, m: 1, t: "Single" }, "9.6": { v: 9, m: 2, t: "Double" }, "9.4": { v: 9, m: 3, t: "Triple" },
+            "2.2": { v: 10, m: 1, t: "Single" }, "2.0": { v: 10, m: 1, t: "Single" }, "4.3": { v: 10, m: 2, t: "Double" }, "2.1": { v: 10, m: 3, t: "Triple" },
+            "7.5": { v: 11, m: 1, t: "Single" }, "7.3": { v: 11, m: 1, t: "Single" }, "7.6": { v: 11, m: 2, t: "Double" }, "7.4": { v: 11, m: 3, t: "Triple" },
+            "5.5": { v: 12, m: 1, t: "Single" }, "5.0": { v: 12, m: 1, t: "Single" }, "5.6": { v: 12, m: 2, t: "Double" }, "5.3": { v: 12, m: 3, t: "Triple" },
+            "0.4": { v: 13, m: 1, t: "Single" }, "0.0": { v: 13, m: 1, t: "Single" }, "4.5": { v: 13, m: 2, t: "Double" }, "0.2": { v: 13, m: 3, t: "Triple" },
+            "10.5": { v: 14, m: 1, t: "Single" }, "10.3": { v: 14, m: 1, t: "Single" }, "10.6": { v: 14, m: 2, t: "Double" }, "10.4": { v: 14, m: 3, t: "Triple" },
+            "3.2": { v: 15, m: 1, t: "Single" }, "3.0": { v: 15, m: 1, t: "Single" }, "4.2": { v: 15, m: 2, t: "Double" }, "3.1": { v: 15, m: 3, t: "Triple" },
+            "11.5": { v: 16, m: 1, t: "Single" }, "11.0": { v: 16, m: 1, t: "Single" }, "11.6": { v: 16, m: 2, t: "Double" }, "11.3": { v: 16, m: 3, t: "Triple" },
+            "10.2": { v: 17, m: 1, t: "Single" }, "10.1": { v: 17, m: 1, t: "Single" }, "8.3": { v: 17, m: 2, t: "Double" }, "10.0": { v: 17, m: 3, t: "Triple" },
+            "1.5": { v: 18, m: 1, t: "Single" }, "1.2": { v: 18, m: 1, t: "Single" }, "1.6": { v: 18, m: 2, t: "Double" }, "1.4": { v: 18, m: 3, t: "Triple" },
+            "6.3": { v: 19, m: 1, t: "Single" }, "6.1": { v: 19, m: 1, t: "Single" }, "8.5": { v: 19, m: 2, t: "Double" }, "6.0": { v: 19, m: 3, t: "Triple" },
+            "3.5": { v: 20, m: 1, t: "Single" }, "3.3": { v: 20, m: 1, t: "Single" }, "3.6": { v: 20, m: 2, t: "Double" }, "3.4": { v: 20, m: 3, t: "Triple" },
+            "8.0": { v: 25, m: 1, t: "Single Bull" }, "4.0": { v: 25, m: 2, t: "Double Bull" },
+            "MISS": { v: 0, m: 1, t: "Fehlwurf" }
+        };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ // Erweiterte Datenstruktur für bis zu 30 Stammspieler + dynamische Gäste
+ let membersData = [
+     { id: 0, name: "Rosenberger, Stefan", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 1, name: "Ben", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 2, name: "Chris", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 3, name: "Dani", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 4, name: "Elias", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 5, name: "Felix", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 6, name: "Gabi", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 7, name: "Hassan", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 8, name: "Spieler 9", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 9, name: "Spieler 10", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 10, name: "Spieler 11", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 11, name: "Spieler 12", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 12, name: "Spieler 13", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 13, name: "Spieler 14", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 14, name: "Spieler 15", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 15, name: "Spieler 16", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 16, name: "Spieler 17", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 17, name: "Spieler 18", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 18, name: "Spieler 19", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 19, name: "Spieler 20", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 20, name: "Spieler 21", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 21, name: "Spieler 22", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 22, name: "Spieler 23", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 23, name: "Spieler 24", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 24, name: "Spieler 25", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 25, name: "Spieler 26", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 26, name: "Spieler 27", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 27, name: "Spieler 28", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 28, name: "Spieler 29", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
+     { id: 29, name: "Spieler 30", x01: 0, cricket: 0, maxicricket: 0, split: 0 }
+ ]; 
+ let activePlayers = [];
+ let currentPlayerIdx = 0;
+ let dartsThrownThisTurn = 0;
+ let currentSessionMode = 'x01';
+ let isProcessingTurnChange = false;
+
+ // NEU: Funktion um einen Gastspieler per Knopfdruck hinzuzufügen
+ function addGuestPlayer() {
+     let guestNumber = membersData.filter(m => m.name.toLowerCase().includes('gast')).length + 1;
+     let newId = membersData.length;
+     membersData.push({
+         id: newId,
+         name: `Gast ${guestNumber}`,
+         x01: 0, cricket: 0, maxicricket: 0, split: 0,
+         isGuest: true // Markierung als temporärer Gast
+     });
+     renderMembersListSidebar();
+     
+     // Setzt den Haken beim neuen Gast automatisch auf aktiv
+     setTimeout(() => {
+         const guestCheckbox = document.getElementById(`mem-${newId}`);
+         if(guestCheckbox) guestCheckbox.checked = true;
+     }, 10);
+ }
+
+
+
+
+
+
+// Öffnet das neue Auswahlfenster und zeichnet sofort die Spielerliste hinein!
+function openPlayerModal() {
+    document.getElementById('player-selection-modal').classList.add('open');
+    renderMembersListSidebar(); 
+}
+
+
+// Schließt das Auswahlfenster
+function closePlayerModal() {
+    document.getElementById('player-selection-modal').classList.remove('open');
+}
+
+
+
+
+
+
+
+
+
+
+
+function renderMembersListSidebar() {
+  const listContainer = document.getElementById('members-list');
+  if (!listContainer) return; 
+  
+  listContainer.innerHTML = ''; // Leeren vor dem Neuzeichnen
+  
+  membersData.forEach((m, idx) => {
+    // Generiert Text-Labels für geholte Siege
+    let statsText = "";
+    if (m.x01 > 0) statsText += ` X01: ${m.x01}`;
+    if (m.cricket > 0) statsText += ` Cri: ${m.cricket}`;
+    if (m.maxicricket > 0) statsText += ` Max: ${m.maxicricket}`;
+    if (m.split > 0) statsText += ` Spl: ${m.split}`;
+    if (statsText !== "") statsText = `<span style="color:var(--accent-gold); font-size:12px; font-weight:bold; margin-top:4px; display:block;">[ ${statsText} ]</span>`;
+    
+    // Standardmäßig die ersten beiden Spieler beim allerersten Start anhaken
+    let wasChecked = idx < 2; 
+    
+    listContainer.innerHTML += `
+    <div class="member-button-card" id="card-wrapper-${idx}" style="display:block; margin:0;">
+      <!-- Die echte Checkbox bleibt im Hintergrund -->
+      <input type="checkbox" class="member-checkbox" id="mem-${idx}" value="${idx}" ${wasChecked ? 'checked' : ''} style="display:none;">
+      
+      <!-- Der klickbare Button-Kasten -->
+      <div class="member-entry" id="visual-box-${idx}" onclick="togglePlayerSelectionState(${idx})" style="display:flex; flex-direction:column; background:${wasChecked ? 'rgba(57, 255, 20, 0.15)' : 'rgba(255,255,255,0.02)'}; border:${wasChecked ? '2px solid var(--accent-green)' : '1px solid rgba(255,255,255,0.1)'}; ${wasChecked ? 'box-shadow: 0 0 15px rgba(57,255,20,0.4);' : ''} padding:15px; border-radius:8px; font-family:'Orbitron', sans-serif; transition:all 0.15s ease-in-out; user-select:none; cursor:pointer;">
+        
+        <div style="display:flex; align-items:center; width:100%; gap:10px;">
+          <span id="status-dot-${idx}" style="font-size:18px; color: ${wasChecked ? 'var(--accent-green)' : '#444'};">${wasChecked ? '✓' : '●'}</span>
+          
+          <input type="text" value="${m.name}" id="name-${idx}" onchange="membersData[${idx}].name=this.value" onclick="event.stopPropagation();" style="margin:0; padding:6px; flex-grow:1; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:4px; font-family:inherit; font-size:16px; font-weight:700; ${wasChecked ? 'text-shadow: 0 0 10px rgba(57,255,20,0.6);' : ''}">
+          
+          <!-- Das Team-Dropdown direkt auf der Spielerkarte -->
+          <select id="team-select-${idx}" onclick="event.stopPropagation();" style="width: auto; margin: 0; padding: 4px 8px; background: #0f111a; border: 1px solid var(--accent-cyan); color: #fff; font-size: 13px; font-weight: bold; border-radius: 4px;">
+            <option value="1" ${idx % 2 === 0 ? 'selected' : ''}>Team 1</option>
+            <option value="2" ${idx % 2 !== 0 ? 'selected' : ''}>Team 2</option>
+            <option value="3">Team 3</option>
+            <option value="4">Team 4</option>
+          </select>
+        </div>
+        ${statsText}
+      </div>
+    </div>`;
+  });
+
+  // --- HIER FOLGT DEIN UNTERER TEIL (DIE PRÜFUNG) ALS FEST INTEGRIERTER ABSCHLUSS ---
+  const startBtn = document.getElementById('btnStartGame');
+  if (startBtn) {
+      // Wir zählen, wie viele Checkboxen einen Haken haben
+      const ausgewaehlteSpieler = document.querySelectorAll('.member-checkbox:checked').length;
+      
+      if (ausgewaehlteSpieler > 0) {
+          // Mindestens 1 Spieler gewählt -> GRÜN & FREIGEGEBEN
+          startBtn.disabled = false;
+          startBtn.innerText = "Training Starten";
+          startBtn.style.background = "linear-gradient(135deg, #009900 0%, #39ff14 100%)";
+          startBtn.style.color = "#000";
+          startBtn.style.cursor = "pointer";
+          startBtn.style.opacity = "1";
+      } else {
+          // Kein Spieler ausgewählt -> ROT & GESPERRT
+          startBtn.disabled = true;
+          startBtn.innerText = "Spieler wählen";
+          startBtn.style.background = "linear-gradient(135deg, #990000 0%, #ff3333 100%)";
+          startBtn.style.color = "#fff";
+          startBtn.style.cursor = "not-allowed";
+          startBtn.style.opacity = "0.9";
+      }
+  }
+} // <--- Das schließt die gesamte renderMembersListSidebar ab!
+ // <--- Das ist die bereits existierende, schließende Klammer der Funktion renderMembersListSidebar!
+
+
+ // NEU: Diese separate Hilfsfunktion färbt den Button live um, ohne den Code zum Absturz zu bringen!
+ function togglePlayerSelectionState(idx) {
+     const checkbox = document.getElementById(`mem-${idx}`);
+     const visualBox = document.getElementById(`visual-box-${idx}`);
+     const statusDot = document.getElementById(`status-dot-${idx}`);
+     const textInput = document.getElementById(`name-${idx}`);
+     
+     if (!checkbox || !visualBox || !statusDot) return;
+     
+     // Zustand der unsichtbaren Checkbox umdrehen
+     checkbox.checked = !checkbox.checked;
+     
+     // Farben live im Browser anpassen
+     if (checkbox.checked) {
+         visualBox.style.background = "rgba(57, 255, 20, 0.15)";
+         visualBox.style.border = "2px solid var(--accent-green)";
+         visualBox.style.boxShadow = "0 0 15px rgba(57,255,20,0.4)";
+         statusDot.style.color = "var(--accent-green)";
+         statusDot.innerText = "✓";
+         if (textInput) textInput.style.textShadow = "0 0 10px rgba(57,255,20,0.6)";
+     } else {
+         visualBox.style.background = "rgba(255,255,255,0.02)";
+         visualBox.style.border = "1px solid rgba(255,255,255,0.1)";
+         visualBox.style.boxShadow = "none";
+         statusDot.style.color = "#444";
+         statusDot.innerText = "●";
+         if (textInput) textInput.style.textShadow = "none";
+     }
+    // Ersetze das fehlerhafte renderMembersListSidebar() durch diesen neuen Aufruf:
+    checkStartButtonLive();
+}
+
+
+
+
+
+function checkStartButtonLive() {
+    const startBtn = document.getElementById('btnStartGame');
+    if (startBtn) {
+        // Wir zählen direkt auf den echten Checkboxen im Dokument, wie viele angehakt sind
+        const ausgewaehlteSpieler = document.querySelectorAll('.member-checkbox:checked').length;
+        
+        if (ausgewaehlteSpieler > 0) {
+            // Mindestens 1 Spieler gewählt -> GRÜN & FREIGEGEBEN
+            startBtn.disabled = false;
+            startBtn.innerText = "Training Starten";
+            startBtn.style.background = "linear-gradient(135deg, #009900 0%, #39ff14 100%)";
+            startBtn.style.color = "#000";
+            startBtn.style.cursor = "pointer";
+            startBtn.style.opacity = "1";
+        } else {
+            // Kein Spieler ausgewählt -> ROT & GESPERRT
+            startBtn.disabled = true;
+            startBtn.innerText = "Spieler wählen";
+            startBtn.style.background = "linear-gradient(135deg, #990000 0%, #ff3333 100%)";
+            startBtn.style.color = "#fff";
+            startBtn.style.cursor = "not-allowed";
+            startBtn.style.opacity = "0.9";
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+function toggleGameModeOptions() {
+ const mode = document.getElementById('game-mode').value;
+ // Erlaubt die Optionen-Anzeige für 'x01' UND 'x01_teams'
+ document.getElementById('x01-options').style.display = (mode === 'x01' || mode === 'x01_teams') ? 'block' : 'none';
+ document.getElementById('split-options').style.display = mode === 'split' ? 'block' : 'none';
+}
+
+
+
+
+function toggleSettingsMenu() {
+    const menu = document.getElementById('sliding-settings-menu');
+    if (!menu) return;
+
+    // Wir prüfen den echten, aktuellen Pixel-Wert im Browser
+    if (menu.style.left === '0px' || menu.style.left === '0') {
+        // Wenn es offen ist -> schieben wir es raus (schließen)
+        menu.style.left = '-400px';
+        menu.classList.remove('open');
+    } else {
+        // Wenn es versteckt ist -> holen wir es rein (öffnen)
+        menu.style.left = '0px';
+        menu.classList.add('open');
+    }
+}
+
+
+
+
+
+
+
+// ERWEITERTES TRAINING-SETUP MIT DOPPEL-FUNKTION (KORRIGIERT)
+function initTrainingSession() {
+ activePlayers = [];
+ currentSessionMode = document.getElementById('game-mode').value;
+ 
+  for(let i = 0; i < membersData.length; i++) {
+    const cb = document.getElementById(`mem-${i}`);
+    const nameInput = document.getElementById(`name-${i}`);
+    
+    // NEU: Holt das vom Nutzer frei gewählte Team aus dem Dropdown
+    const teamDropdown = document.getElementById(`team-select-${i}`);
+    let zugewiesenesTeam = teamDropdown ? parseInt(teamDropdown.value) : 1;
+    
+    if(cb && cb.checked) {
+      let pName = nameInput.value.trim() || `Spieler ${i+1}`;
+      let startScore = 501;
+      
+      // Greift auch bei der neuen Team-ID 'x01_teams'
+      if(currentSessionMode === 'x01' || currentSessionMode === 'x01_teams') {
+        startScore = parseInt(document.getElementById('x01-target').value);
+      }
+      if(currentSessionMode === 'split') startScore = 40;
+      if(currentSessionMode === 'cricket' || currentSessionMode === 'maxicricket') startScore = 0;
+      
+      activePlayers.push({
+        memberId: i,
+        name: pName,
+        score: startScore,
+        totalDarts: 0,
+        team: zugewiesenesTeam, // Nutzt dein manuell gesetztes Team!
+        cricketHits: (currentSessionMode === 'maxicricket') ? 
+        {10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0,18:0,19:0,20:0,25:0} : 
+        {15:0,16:0,17:0,18:0,19:0,20:0,25:0}
+      });
+    }
+  }
+ 
+ if(activePlayers.length === 0) { return alert("Bitte wähle mindestens 1 Mitglied aus!"); }
+ currentPlayerIdx = 0; dartsThrownThisTurn = 0;
+ isProcessingTurnChange = false;
+ 
+ // Schaltet das Standard-Scoreboard komplett ab, wir nutzen nur noch das große Multi-Display!
+ document.getElementById('main-scoreboard').style.display = 'none';
+ document.getElementById('cricket-matrix-hud').style.display = 'block';
+ document.getElementById('setup-panel').style.opacity = '0.5';
+ 
+ updateHud();
+ 
+ // --- GARANTIERTES SCHLIESSEN DER SIDEBAR BEI SPIELSTART ---
+ const menu = document.getElementById('sliding-settings-menu');
+ if (menu) {
+ menu.style.left = '-400px'; 
+ menu.classList.remove('open');
+ }
+ 
+ logHistory(`=== Training gestartet: ${currentSessionMode.toUpperCase()} ===`);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function updateHud() {
+ if (activePlayers.length === 0) return;
+ 
+ const matrixHud = document.getElementById('cricket-matrix-hud');
+ const rowsContainer = document.getElementById('cricket-rows-container');
+ 
+ // Multi-Display für alle Modi erzwingen
+ matrixHud.style.display = 'block';
+ matrixHud.style.width = "96%";
+ matrixHud.style.maxWidth = "1600px";
+ matrixHud.style.margin = "0 auto";
+ 
+ let targetBannerHtml = "";
+ const pCurrent = activePlayers[currentPlayerIdx];
+ const aktuelleRunde = Math.floor(pCurrent.totalDarts / 3) + 1;
+ // Liest aus, ob im Menü "12" oder "15" gewählt wurde
+ const splitModus = parseInt(document.getElementById('split-start')?.value) || 12;
+ 
+ // Definition beider Spielpläne (Vollständig erhalten!)
+ const spielplaene = {
+ 12: {
+ 1: { text: "12", desc: "SINGLE 12", color: "#00f0ff", v: 12, m: 1 },
+ 2: { text: "13", desc: "SINGLE 13", color: "#00f0ff", v: 13, m: 1 },
+ 3: { text: "14", desc: "SINGLE 14", color: "#00f0ff", v: 14, m: 1 },
+ 4: { text: "DOPPEL", desc: "ANY DOUBLE", color: "#39ff14", v: 0, m: 2 },
+ 5: { text: "15", desc: "SINGLE 15", color: "#00f0ff", v: 15, m: 1 },
+ 6: { text: "16", desc: "SINGLE 16", color: "#00f0ff", v: 16, m: 1 },
+ 7: { text: "17", desc: "SINGLE 17", color: "#00f0ff", v: 17, m: 1 },
+ 8: { text: "TRIPPLE", desc: "ANY TRIPLE", color: "#ffaa00", v: 0, m: 3 },
+ 9: { text: "18", desc: "SINGLE 18", color: "#00f0ff", v: 18, m: 1 },
+ 10: { text: "19", desc: "SINGLE 19", color: "#00f0ff", v: 19, m: 1 },
+ 11: { text: "20", desc: "SINGLE 20", color: "#00f0ff", v: 20, m: 1 },
+ 12: { text: "BULL", desc: "BULL / D-BULL", color: "#ff0055", v: 25, m: 1 },
+ 13: { text: "D-BULL", desc: "DOUBLE BULL", color: "#ff0055", v: 25, m: 2 }
+ },
+ 15: {
+ 1: { text: "15", desc: "SINGLE 15", color: "#00f0ff", v: 15, m: 1 },
+ 2: { text: "16", desc: "SINGLE 16", color: "#00f0ff", v: 16, m: 1 },
+ 3: { text: "DOPPEL", desc: "ANY DOUBLE", color: "#39ff14", v: 0, m: 2 },
+ 4: { text: "17", desc: "SINGLE 17", color: "#00f0ff", v: 17, m: 1 },
+ 5: { text: "18", desc: "SINGLE 18", color: "#00f0ff", v: 18, m: 1 },
+ 6: { text: "TRIPPLE", desc: "ANY TRIPLE", color: "#ffaa00", v: 0, m: 3 },
+ 7: { text: "19", desc: "SINGLE 19", color: "#00f0ff", v: 19, m: 1 },
+ 8: { text: "20", desc: "SINGLE 20", color: "#00f0ff", v: 20, m: 1 },
+ 9: { text: "BULL", desc: "BULL / D-BULL", color: "#ff0055", v: 25, m: 1 },
+ 10: { text: "D-BULL", desc: "DOUBLE BULL", color: "#ff0055", v: 25, m: 2 }
+ }
+ };
+ 
+ const splitZiele = spielplaene[splitModus];
+ const maxRunden = (splitModus === 12) ? 13 : 10;
+ 
+ if (currentSessionMode === 'split') {
+ const ziel = splitZiele[aktuelleRunde] || { desc: "TRAINING BEENDET", color: "#fff" };
+ targetBannerHtml = `
+ <div style="background: rgba(255, 170, 0, 0.15); border: 3px dashed #ffaa00; border-radius: 12px; padding: 15px; text-align: center; margin-bottom: 25px; font-family: 'Orbitron'; font-weight: 900;">
+ <span style="font-size: 20px; color: #aaa; letter-spacing: 2px; display: block; margin-bottom: 5px;">AKTUELLES RUNDENZIEL (MODUS AB ${splitModus}):</span>
+ <span style="font-size: 50px; color: ${ziel.color}; text-shadow: 0 0 20px ${ziel.color}; letter-spacing: 2px;"> ${ziel.desc} </span> 🎯
+ </div>`;
+ }
+  else if (currentSessionMode === 'x01' || currentSessionMode === 'x01_teams') {
+    const x01Target = document.getElementById('x01-target').value;
+    const rawIn = document.getElementById('x01-in')?.value || 'open';
+    const rawOut = document.getElementById('x01-out')?.value || 'open';
+    
+    const inTranslations = { 'open': '', 'double': 'DOUBLE IN - ', 'master': 'MASTER IN - ' };
+    const outTranslations = { 'open': 'OPEN OUT', 'double': 'DOUBLE OUT', 'master': 'MASTER OUT' };
+    
+    // Kombiniert Einwurf und Auswurf dynamisch (z.B. "MASTER IN - 501 DOUBLE OUT")
+    const inModeText = inTranslations[rawIn] || '';
+    const outModeText = outTranslations[rawOut] || 'OPEN OUT';
+    const aktuellerModusText = `${inModeText}${x01Target} ${outModeText}`;
+    
+    // CSS-Animation für das rhythmische 3D-Blinken der Dartpfeile
+    const blinkStyle = `
+      <style>
+        @keyframes dartBlink {
+          0% { opacity: 0.2; transform: scale(0.9) translateZ(0); filter: drop-shadow(0 0 2px rgba(0,0,0,0.5)); }
+          100% { opacity: 1.0; transform: scale(1.1) translateZ(20px); filter: drop-shadow(0 0 15px var(--accent-cyan)); }
+        }
+        .blinking-dart {
+          display: inline-block;
+          animation: dartBlink 0.8s infinite alternate ease-in-out;
+          perspective: 1000px;
+        }
+      </style>
+    `;
+
+    targetBannerHtml = `
+      ${blinkStyle}
+      <h3 style="color:var(--accent-cyan); font-size:32px; text-align:center; font-family:'Orbitron'; margin-bottom:25px; text-shadow: 0 0 12px rgba(0,240,255,0.5); display: flex; align-items: center; justify-content: center; gap: 20px;">
+        <span class="blinking-dart" style="animation-delay: 0s;">🎯</span>
+        <span>${aktuellerModusText}</span>
+        <span class="blinking-dart" style="animation-delay: 0.4s; transform: scaleX(-1);">🎯</span>
+      </h3>`;
+  }
+
+
+ const currentPlayer = activePlayers[currentPlayerIdx];
+ 
+ let layoutContainerStart = `<div style="display: flex; gap: 30px; width: 100%; align-items: stretch; font-family:'Orbitron';">`;
+ let layoutContainerEnd = `</div>`;
+ 
+ let horizontalRowsHtml = `<div style="display: flex; flex-direction: column; gap: 12px; width: 380px; flex-shrink: 0;">`;
+ 
+ activePlayers.forEach((p, idx) => {
+ const isCurrent = (idx === currentPlayerIdx);
+ const borderColor = isCurrent ? 'var(--accent-cyan)' : 'rgba(255,255,255,0.08)';
+ const bgBox = isCurrent ? 'rgba(0, 240, 255, 0.15)' : 'rgba(15, 20, 38, 0.4)';
+ const shadow = isCurrent ? 'box-shadow: 0 0 15px rgba(0,240,255,0.3);' : '';
+ const nameColor = isCurrent ? 'var(--accent-cyan)' : '#ffffff';
+ 
+ horizontalRowsHtml += `
+ <div id="player-row-${idx}" style="display: flex; justify-content: space-between; align-items: center; background:${bgBox}; border: 2px solid ${borderColor}; ${shadow} border-radius: 8px; padding: 12px 20px; transition: all 0.2s;">
+ <div style="font-size: 18px; font-weight: 700; color: ${nameColor}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px; display: flex; align-items: center; gap: 8px;">
+ ${isCurrent ? '<span style="color:var(--accent-cyan); animation: pulse 1s infinite alternate;">▶</span>' : ''} 
+ <span>${p.name}</span>
+ </div>
+ <div style="font-size: 22px; font-weight: 900; color: var(--accent-green); text-shadow: 0 0 10px rgba(57,255,20,0.4);">
+ ${p.score} <span style="font-size: 12px; color: #aaa; font-weight: normal;">${(currentSessionMode === 'x01' || currentSessionMode === 'x01_teams') ? 'PKT' : 'PTS'}</span>
+ </div>
+ </div>
+ 
+`
+;
+
+
+
+
+
+  // === HIER STARTET DEIN BESTEHENDER CODE (ANKER DAVOR) ===
+  });
+  horizontalRowsHtml += '</div>';
+ 
+ 
+  // =========================================================================
+  // AB HIER DEN ALTEN BLOCK LÖSCHEN UND DURCH DIESEN NEUEN CODE ERSETZEN:
+  // =========================================================================
+  let mainFocusCardHtml = '';
+   
+  if (currentSessionMode === 'x01' || currentSessionMode === 'split' || currentSessionMode === 'x01_teams') {
+    let lockNoticeHtml = "";
+   
+    // 1. TEAM-SPERR-LOGIK
+    if (currentSessionMode === 'x01_teams' && activePlayers.length >= 2) {
+      if (currentPlayer.score > 180) {
+        lockNoticeHtml = `<div style="color:#6b7c96; font-weight:bold; font-size:46px; margin-top:15px; letter-spacing:1px;">PUNKTE REDUZIEREN</div>`;
+      } else {
+        let myTeamScore = 0;
+        let opponentTeamScore = 0;
+        
+        activePlayers.forEach(p => {
+          if (p.team === pCurrent.team) myTeamScore += p.score;
+          else opponentTeamScore += p.score;
+        });
+        
+        if (myTeamScore > opponentTeamScore) {
+          lockNoticeHtml = `<div class="team-lock-warning"> ⚠ AUSCHECK-SPERRE: GEGNER FÜHREN! </div>`;
+        } else {
+          lockNoticeHtml = `<div style="color:var(--accent-green); font-weight:bold; font-size:16px; margin-top:15px; text-shadow:0 0 8px var(--accent-green);">✓ AUSCHECK FREI</div>`;
+        }
+      }
+    }
+
+    // 2. DYNAMISCHE SCHRIFTGRÖSSE & ENTFERNEN VON "AM WURF" IM EINZELMODUS
+    let amWurfHtml = "";
+    let nameFontSize = "3.8vw"; // Standard-Größe für Team-Modus
+    
+    if (currentSessionMode === 'x01_teams') {
+      amWurfHtml = `
+        <div style="font-size: 1.6vw; min-font-size: 14px; color: var(--accent-gold); font-weight: 900; letter-spacing: 3px; margin-bottom: 0.5vh; text-transform: uppercase;">
+          AM WURF (SPIELER ${currentPlayerIdx + 1} - TEAM ${currentPlayer.team})
+        </div>`;
+    } else {
+      amWurfHtml = "";
+      nameFontSize = "5.5vw"; 
+    }
+   
+    // 3. GENERIERUNG DER FOCUS-CARD
+    mainFocusCardHtml = `
+    <div style="flex-grow: 1; width: 100%; height: 65vh; display: flex; flex-direction: column; justify-content: space-between; align-items: center; background: rgba(15, 20, 38, 0.7); border: 4px solid var(--accent-cyan); box-shadow: 0 0 40px rgba(0,240,255,0.4); border-radius: 16px; padding: 2vh 2vw; text-align: center; box-sizing: border-box; overflow: hidden;">
+      <div style="width: 100%; display: flex; flex-direction: column; justify-content: center; flex: 1; min-height: 0;">
+        ${amWurfHtml}
+        <div style="font-size: ${nameFontSize}; font-weight: 900; color: #ffffff; text-shadow: 0 0 20px rgba(255,255,255,0.4); line-height: 1.1; margin: 0.5vh 0; word-wrap: break-word; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%;">
+          ${currentPlayer.name}
+        </div>
+      </div>
+      <div style="width: 100%; display: flex; flex-direction: column; justify-content: center; flex: 1.5; min-height: 0;">
+        <div style="font-size: 12.5vw; font-weight: 900; color: var(--accent-green); text-shadow: 0 0 40px rgba(57,255,20,0.6); line-height: 1;">
+          ${currentPlayer.score}
+        </div>
+        <div style="font-size: 1.4vw; min-font-size: 12px; color: #6b7c96; font-weight: 900; letter-spacing: 4px; margin-top: 0.5vh; text-transform: uppercase;">
+          RESTLICHE PUNKTE
+        </div>
+        ${lockNoticeHtml}
+      </div>
+    </div>`;
+  }
+  // =========================================================================
+  // ENDE DES NEUEN CODES
+  // =========================================================================
+ 
+ 
+  // === AB HIER GEHT DEIN BESTEHENDER CODE WEITER (ANKER DAHINTER) ===
+  else {
+
+
+ let cricketTreeHtml = `<div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; background: rgba(0,0,0,0.6); padding: 1.5vh 1vw; border-radius: 10px; gap: 0.8vw; width: 100%; box-sizing: border-box;">`;
+ let openFieldsHtmlArray = [];
+ Object.keys(currentPlayer.cricketHits).sort((a,b) => a-b).forEach(num => {
+ let hitCount = currentPlayer.cricketHits[num];
+ let label = (num == 25) ? "BULL" : `${num}`;
+ let opponentsHaveItOpen = activePlayers.some((opp, idx) => idx !== currentPlayerIdx && opp.cricketHits[num] < 3);
+ let statusIcon = '···';
+ if (hitCount === 1) statusIcon = ' / ';
+ if (hitCount === 2) statusIcon = ' X ';
+ if (hitCount === 3) statusIcon = ' ⭕ ';
+ let cellColor = (hitCount >= 3) ? 'var(--accent-green)' : (hitCount > 0 ? 'var(--accent-cyan)' : '#444');
+ if (!opponentsHaveItOpen && hitCount < 3) cellColor = '#ff3333';
+ let bgIndicator = (hitCount >= 3) ? 'rgba(57,255,20,0.15)' : (hitCount > 0 ? 'rgba(0,240,255,0.08)' : 'transparent');
+ cricketTreeHtml += `
+ <div style="flex: 1 1 calc(8% - 0.8vw); min-width: 65px; display: flex; flex-direction: column; align-items: center; justify-content: center; background:${bgIndicator}; border: 2px solid ${hitCount > 0 ? cellColor : 'rgba(255,255,255,0.05)'}; padding: 1.2vh 0.2vw; border-radius: 8px; box-sizing: border-box;">
+ <div style="font-size: 2.2vw; min-font-size: 20px; color: ${cellColor}; font-family: 'Orbitron', sans-serif; font-weight: 900; margin-bottom: 2px; text-shadow: ${hitCount > 0 ? '0 0 10px ' + cellColor : 'none'}; text-align: center; width: 100%; box-sizing: border-box;">${label}</div>
+ <div style="font-size: 2.5vw; min-font-size: 22px; font-weight: 900; color: ${cellColor}; font-family: monospace; line-height: 0.9; margin-top: 5px;">${statusIcon}</div>
+ </div>`;
+ if (hitCount < 3) {
+ if (!opponentsHaveItOpen) openFieldsHtmlArray.push(`<span class="target-blocked">${label}</span>`);
+ else openFieldsHtmlArray.push(`<span>${label}</span>`);
+ }
+ });
+ cricketTreeHtml += `</div>`;
+ let openFieldsText = openFieldsHtmlArray.length > 0 ? openFieldsHtmlArray.join(", ") : "ALLE ZU!";
+ let modeIconHtml = (currentSessionMode === 'maxicricket') ? `<span class="monster-icon-3d">😈</span>` : `<span class="active-arrow-neon">▶</span>`;
+ let cardBorderColor = (currentSessionMode === 'maxicricket') ? "#ff0055" : "var(--accent-cyan)";
+ let cardShadowColor = (currentSessionMode === 'maxicricket') ? "rgba(255,0,85,0.3)" : "rgba(0,240,255,0.4)";
+ mainFocusCardHtml = `
+ <div style="flex-grow: 1; width: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: center; background: rgba(15, 20, 38, 0.7); border: 4px solid ${cardBorderColor}; box-shadow: 0 0 40px ${cardShadowColor}; border-radius: 16px; padding: 3vh 3vw; text-align: center; min-height: 440px; box-sizing: border-box;">
+ <div style="width: 100%;">
+ <div style="font-size: 1.8vw; min-font-size: 14px; color: var(--accent-gold); font-weight: 900; letter-spacing: 3px; margin-bottom: 1vh;">
+ CRICKET TARGET (SPIELER ${currentPlayerIdx + 1})
+ </div>
+ <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 2vh; gap: 2vw;">
+ <div style="text-align: left; min-width: 0; flex: 1;">
+ <div style="font-size: 4.5vw; font-weight: 900; color: #ffffff; text-shadow: 0 0 20px rgba(255,255,255,0.4); display: flex; align-items: center;">
+ <span>${currentPlayer.name}</span>
+ ${modeIconHtml}
+ </div>
+ <div class="open-targets-hint">Offene Felder: <strong>${openFieldsText}</strong></div>
+ </div>
+ <div style="font-size: 5vw; font-weight: 900; color: var(--accent-green); text-shadow: 0 0 30px rgba(57,255,20,0.6); line-height: 1; flex-shrink: 0;">
+ ${currentPlayer.score}<span style="font-size: 1.5vw; color: #aaa; font-weight: normal; margin-left: 5px;">PTS</span>
+ </div>
+ </div>
+ </div>
+ <div style="width: 100%;">${cricketTreeHtml}</div>
+ </div>`;
+ }
+ 
+ let roadmapHtml = "";
+ if (currentSessionMode === 'split') {
+ roadmapHtml = `<div style="width: 300px; background: rgba(10, 15, 30, 0.7); border: 2px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 12px; font-family: 'Orbitron'; box-shadow: 0 4px 20px rgba(0,0,0,0.4);"><h4 style="color: var(--accent-gold); font-size: 15px; text-align: center; border-bottom: 1px solid #333; padding-bottom: 6px; margin-bottom: 8px;">SPIELPLAN VORSCHAU</h4><div style="display: flex; flex-direction: column; gap: 4px;">`;
+ for (let r = 1; r <= maxRunden; r++) {
+ const ziel = splitZiele[r];
+ if (!ziel) continue;
+ const isCurrent = (r === aktuelleRunde);
+ const isPassed = (r < aktuelleRunde);
+ const activeStyle = isCurrent ? `background: rgba(0, 240, 255, 0.15); border: 1px solid var(--accent-cyan); font-weight: bold; color: #fff;` : `color: #777;`;
+ const checkmark = isPassed ? `<span style="color:var(--accent-green);">✓</span>` : (isCurrent ? `▶` : `·`);
+ roadmapHtml += `<div style="display: grid; grid-template-columns: 25px 55px 1fr; align-items: center; padding: 3px 8px; border-radius: 4px; font-size: 13px; ${activeStyle}"><span>${checkmark}</span><span style="font-size: 11px; color: #aaa;">Rnd ${r}</span><span style="text-align: right; color: ${ziel.color}">${ziel.text}</span></div>`;
+ }
+ roadmapHtml += `</div></div>`;
+ }
+ 
+ rowsContainer.innerHTML = targetBannerHtml + layoutContainerStart + horizontalRowsHtml + mainFocusCardHtml + roadmapHtml + layoutContainerEnd;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+function processHit(matrixKey) {
+ if(activePlayers.length === 0 || isProcessingTurnChange) return;
+ 
+ const hit = EXACT_BOARD_MATRIX[matrixKey] || EXACT_BOARD_MATRIX["MISS"];
+ const p = activePlayers[currentPlayerIdx];
+ const points = hit.v * hit.m;
+ 
+ // =========================================================================
+ // KORREKTUR: WURFE IN JEDEM MODUS HOCHZÄHLEN (FÜR AUTOMATISCHEN WECHSEL)
+ // =========================================================================
+ dartsThrownThisTurn++; 
+ p.totalDarts++; 
+ // =========================================================================
+
+ animateSegmentHit(hit.v, hit.m);
+ // --- AUTOMATISCHE SOUND- & SPRACH-ENGINE ---
+ try {
+ // 1. Ein kurzer, knackiger Arcade-Piepton bei jedem Treffer
+ const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+ const oscillator = audioCtx.createOscillator();
+ const gainNode = audioCtx.createGain();
+ oscillator.connect(gainNode);
+ gainNode.connect(audioCtx.destination);
+ 
+ oscillator.type = 'sine';
+ oscillator.frequency.setValueAtTime(hit.m === 3 ? 880 : (hit.m === 2 ? 660 : 440), audioCtx.currentTime);
+ gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+ 
+ oscillator.start();
+ gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.1);
+ oscillator.stop(audioCtx.currentTime + 0.1);
+ 
+ // 2. Sprach-Ansage der Punkte auf Deutsch
+ let speechText = "";
+ if (hit.v === 0) speechText = "Fehlwurf";
+ else if (hit.v === 25) speechText = hit.m === 2 ? "Doppel Bull" : "Bullseye";
+ else {
+ let prefixText = hit.m === 3 ? "Dreifach " : (hit.m === 2 ? "Doppel " : "");
+ speechText = `${prefixText}${hit.v}`;
+ }
+ 
+ const utterance = new SpeechSynthesisUtterance(speechText);
+ utterance.lang = 'de-DE';
+ utterance.rate = 1.25; // Schön knackig und zügig gesprochen
+ window.speechSynthesis.speak(utterance);
+ } catch(audioErr) {
+ console.error("Audio-Fehler:", audioErr);
+ }
+ 
+ // Merkt sich die Punkte exakt VOR dem ersten Wurf der Runde für einen potenziellen BUST
+ if (dartsThrownThisTurn === 1) {
+ p.scoreAtStartOfTurn = p.score;
+ }
+ logHistory(`${p.name}: ${hit.t} ${hit.v} (${points} Pkt)`);
+
+ // HIER FOLGT JETZT DEINE BESTEHENDE LOGIK:
+ // --- CRICKET & MAXI-CRICKET LOGIK MIT PUNKTEN ---
+ if(currentSessionMode === 'cricket' || currentSessionMode === 'maxicricket') {
+ // ... ab hier bleibt der restliche Code unverändert!
+
+                if(p.cricketHits[hit.v] !== undefined) {
+                    let remainingMultiplier = hit.m;
+                    let oldHits = p.cricketHits[hit.v];
+                    
+                    // 1. Eigene Treffer hochzählen (bis max 3)
+                    p.cricketHits[hit.v] = Math.min(3, oldHits + remainingMultiplier);
+                    
+                    // 2. Wenn das Feld bereits vor dem Wurf offen war oder der Wurf die 3 überschreitet, gibt es Punkte
+                    let hitsBeforeScoring = 3 - oldHits;
+                    if (remainingMultiplier > hitsBeforeScoring) {
+                        let scoringMultiplier = remainingMultiplier - hitsBeforeScoring;
+                        
+                        // Prüfen, ob mindestens ein anderer Spieler dieses Feld noch offen hat
+                        let opponentsHaveItOpen = activePlayers.some((opp, idx) => idx !== currentPlayerIdx && opp.cricketHits[hit.v] < 3);
+                        
+                        if (opponentsHaveItOpen) {
+                            // Punkte auf das aktuelle Cricket-Konto gutschreiben
+                            p.score += (hit.v * scoringMultiplier);
+                            logHistory(`${p.name} punktet! +${hit.v * scoringMultiplier} PTS auf der ${hit.v}`);
+                        }
+                    }
+                    
+                    // Prüfen, ob der Spieler alle Felder geschlossen hat UND die meisten Punkte hat
+                    let allClosed = Object.values(p.cricketHits).every(val => val >= 3);
+                    let highestScore = Math.max(...activePlayers.map(player => player.score));
+                    
+                    if(allClosed && p.score >= highestScore) {
+                        // Sieg im richtigen Modus in der Hauptliste verbuchen
+                        let masterMember = membersData[p.memberId];
+                        if (masterMember) {
+                            if (currentSessionMode === 'maxicricket') masterMember.maxicricket++;
+                            else masterMember.cricket++;
+                        }
+                        
+                        logHistory(`🏆 ${p.name} gewinnt das Cricket-Leg!`);
+                        showBanner(`${p.name} SIEGT!`);
+                        renderMembersListSidebar(); // Sidebar-Statistik sofort aktualisieren!
+                        
+                        setTimeout(() => {
+                            hideBanner();
+                            activePlayers.forEach(player => {
+                                player.score = 0;
+                                player.totalDarts = 0;
+                                player.cricketHits = (currentSessionMode === 'maxicricket') ? 
+                                {10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0,18:0,19:0,20:0,25:0} : 
+                                {15:0,16:0,17:0,18:0,19:0,20:0,25:0};
+                            });
+                            currentPlayerIdx = 0; dartsThrownThisTurn = 0;
+                            updateHud();
+                        }, 5000);
+                        return;
+                    }
+
+
+                }
+            }
+
+ // --- X01 & X01-TEAMS SPIELLOGIK (MIT KORREKTER MASTER/DOUBLE IN ENGINE) ---
+ else if(currentSessionMode === 'x01' || currentSessionMode === 'x01_teams') 
+ {
+ const inMode = document.getElementById('x01-in')?.value || 'open';
+ const outMode = document.getElementById('x01-out')?.value || 'open';
+ const x01Target = parseInt(document.getElementById('x01-target').value) || 501;
+ 
+ let isBust = false;
+ let pointsToSubtract = points;
+ 
+ // =========================================================================
+ // 1. EINWURF-PRÜFUNG (IN-MODUS LOGIK)
+ // =========================================================================
+ if (p.score === x01Target) {
+ if (inMode === 'double' && hit.m !== 2) {
+ // Double In gewählt, aber kein Double getroffen -> Wurf ungültig (0 Punkte)
+ pointsToSubtract = 0;
+ logHistory(`${p.name}: Kein Einwurf (Benötigt DOPPEL)`);
+ } else if (inMode === 'master' && hit.m < 2) {
+ // Master In gewählt, aber kein Double, Triple oder Bull getroffen -> Ungültig
+ pointsToSubtract = 0;
+ logHistory(`${p.name}: Kein Einwurf (Benötigt DOPPEL / TRIPLE / BULL)`);
+ } else if (inMode !== 'open') {
+ logHistory(`🎯 ${p.name} ERFOLGREICH EINGEWORFEN mit ${hit.t} ${hit.v}!`);
+ }
+ }
+ // =========================================================================
+ 
+ let potentialScore = p.score - pointsToSubtract;
+ 
+ // 2. AUSWURF- & SPERR-LOGIK (NUR PRÜFEN, WENN DER WURF GÜLTIG WAR)
+ if (pointsToSubtract > 0) {
+ if (potentialScore === 0) {
+ if (outMode === 'double' && hit.m !== 2) isBust = true;
+ if (outMode === 'master' && hit.m < 2) isBust = true;
+ 
+ if (!isBust && currentSessionMode === 'x01_teams') {
+ let myTeamScore = 0;
+ let opponentTeamScore = 0;
+ 
+ activePlayers.forEach(player => {
+ let currentScoreToCheck = (player.memberId === p.memberId) ? 0 : player.score;
+ if (player.team === p.team) myTeamScore += currentScoreToCheck;
+ else opponentTeamScore += currentScoreToCheck;
+ });
+ 
+ if (myTeamScore > opponentTeamScore) {
+ isBust = true;
+ logHistory(` Sperr-Bust! Gegner haben weniger Punkte!`);
+ showBanner("SPERRE! BUST!");
+ }
+ }
+ } else if (potentialScore < 2 && (outMode === 'double' || outMode === 'master')) {
+ isBust = true;
+ } else if (potentialScore < 0) {
+ isBust = true;
+ }
+ }
+ 
+ if (isBust) {
+ p.score = p.scoreAtStartOfTurn || p.score; 
+ logHistory(` Bust! ${p.name} zurück auf ${p.score}`); 
+ dartsThrownThisTurn = 3; 
+ } else {
+ p.score = potentialScore;
+ }
+ 
+ // Gewonnen-Bedingung auswerten
+ if(p.score === 0 && !isBust && pointsToSubtract > 0) { 
+ let masterMember = membersData[p.memberId];
+ if (masterMember) {
+ masterMember.x01++; 
+ }
+ 
+ logHistory(` ${p.name} gewinnt das X01-Leg für Team ${p.team}!`); 
+ showBanner(`${p.name} SIEGT!`); 
+ renderMembersListSidebar();
+ 
+ setTimeout(() => {
+ hideBanner();
+ activePlayers.forEach(player => {
+ player.score = x01Target;
+ player.totalDarts = 0;
+ });
+ currentPlayerIdx = 0; dartsThrownThisTurn = 0;
+ updateHud();
+ }, 5000);
+ return; 
+ }
+ }
+
+
+
+
+
+ // --- SPLIT SCORE LOGIK (DYNAMISCH FÜR MODUS 12 & 15) ---
+ else if(currentSessionMode === 'split') {
+     const splitModus = parseInt(document.getElementById('split-start')?.value) || 12;
+     const aktuelleRunde = Math.floor((p.totalDarts - 1) / 3) + 1;
+     
+     // Die exakt gleichen Spielpläne wie im HUD abrufen
+     const spielplaene = {
+         12: {
+             1: { v: 12, m: 1 }, 2: { v: 13, m: 1 }, 3: { v: 14, m: 1 }, 4: { v: 0, m: 2 },
+             5: { v: 15, m: 1 }, 6: { v: 16, m: 1 }, 7: { v: 17, m: 1 }, 8: { v: 0, m: 3 },
+             9: { v: 18, m: 1 }, 10: { v: 19, m: 1 }, 11: { v: 20, m: 1 }, 12: { v: 25, m: 1 }, 13: { v: 25, m: 2 }
+         },
+         15: {
+             1: { v: 15, m: 1 }, 2: { v: 16, m: 1 }, 3: { v: 0, m: 2 }, 4: { v: 17, m: 1 },
+             5: { v: 18, m: 1 }, 6: { v: 0, m: 3 }, 7: { v: 19, m: 1 }, 8: { v: 20, m: 1 },
+             9: { v: 25, m: 1 }, 10: { v: 25, m: 2 }
+         }
+     };
+     
+     const ziel = spielplaene[splitModus][aktuelleRunde];
+     let isCorrectHit = false;
+
+     if (ziel) {
+         if (ziel.v === 0) {
+             // Sonderrunden: DOPPEL (m === 2) oder TRIPPLE (m === 3)
+             if (hit.m === ziel.m) isCorrectHit = true;
+         } else if (ziel.v === 25 && ziel.m === 1) {
+             // Runde BULL: Erlaubt sowohl Single Bull als auch Double Bull (v === 25 erfasst beide Typen)
+             if (hit.v === 25) isCorrectHit = true;
+         } else {
+             // Normale Single-Segmente oder die exakte D-BULL Abschlussrunde
+             if (hit.v === ziel.v && hit.m === ziel.m) isCorrectHit = true;
+         }
+     }
+
+     if (isCorrectHit) {
+         p.score += points; // Fügt den echten Wert des Wurfs hinzu
+         if (!p.roundHitsThisTurn) p.roundHitsThisTurn = 0;
+         p.roundHitsThisTurn++; 
+         logHistory(`🎯 Treffer! +${points} PTS`);
+     } else {
+         logHistory(`❌ Vorbeigeworfen`);
+     }
+ }
+
+ 
+    // Aktualisiert das Display nach jedem einzelnen Wurf
+    updateHud();
+
+    // --- RUNDENENDE: DIESER BLOCK MUSS AUSSERHALB DER MODI STEHEN! ---
+    if (dartsThrownThisTurn >= 3) { 
+        
+        // Wenn wir im Split-Modus sind, führen wir zusätzlich die Halbierung aus
+        if (currentSessionMode === 'split') {
+            const mindestPfeile = parseInt(document.getElementById('split-start')?.value) || 12;
+            if (!p.roundHitsThisTurn || p.roundHitsThisTurn === 0) {
+                if (p.totalDarts > mindestPfeile) {
+                    const altePunktzahl = p.score;
+                    p.score = Math.round(p.score / 2);
+                    
+                    const exploContainer = document.createElement('div');
+                    exploContainer.className = 'split-explosion-overlay';
+                    exploContainer.innerHTML = `<div class="explosion-number">${altePunktzahl}<br><span style="font-size:4vw; color:#fff;">💥 ZERPLATZT AUF ${p.score} 💥</span></div>`;
+                    document.body.appendChild(exploContainer);
+                    
+                    setTimeout(() => { exploContainer.remove(); }, 2000);
+                    logHistory(`💥 Keine Treffer! ${p.name} fällt auf ${p.score}`);
+                } else {
+                    logHistory(`ℹ️ Keine Treffer, aber geschützt vor Pfeil ${mindestPfeile}`);
+                }
+            }
+            p.roundHitsThisTurn = 0;
+        }
+        
+        // JETZT ERREICHBAR FÜR ALLE MODI (X01, X01-Teams, Cricket, Split):
+        // Wechselt zum nächsten Spieler und blendet das "Pfeile rausziehen"-Banner ein
+        triggerTurnChange(); 
+    }
+} // <--- Diese Klammer beendet die Funktion processHit(matrixKey) sauber!
+
+
+
+ function triggerTurnChange() {
+            isProcessingTurnChange = true;
+            showBanner("PFEILE RAUSZIEHEN!");
+            
+            setTimeout(() => {
+                dartsThrownThisTurn = 0;
+                // Zum nächsten Spieler wechseln (rotiert bei Erreichen des Endes automatisch zu Spieler 1)
+                currentPlayerIdx = (currentPlayerIdx + 1) % activePlayers.length;
+                
+                hideBanner();
+                isProcessingTurnChange = false;
+                updateHud();
+
+                // AUTOMATISCHES NACHRÜCKEN/SCROLLEN:
+                // Findet die Zeile des neuen Spielers und scrollt sie perfekt in die Mitte des Bildschirms
+                setTimeout(() => {
+                    const nextPlayerRow = document.getElementById(`player-row-${currentPlayerIdx}`);
+                    const scrollContainer = document.getElementById('cricket-rows-container');
+                    
+                    if (nextPlayerRow && scrollContainer) {
+                        // Wenn Spieler 1 (Index 0) wieder dran ist, scrollen wir radikal ganz nach oben
+                        if (currentPlayerIdx === 0) {
+                            scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+                        } else {
+                            // Ansonsten zentrieren wir den aktiven Spieler sanft im Sichtfeld
+                            nextPlayerRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }
+                }, 50);
+
+            }, 4000); // 4 Sekunden Pause zum Pfeile holen
+        }
+
+
+        // Blendet das große Info-Banner über dem 3D-Feld ein
+        function showBanner(text) {
+            const banner = document.getElementById('action-banner');
+            banner.innerText = text;
+            banner.classList.add('show');
+        }
+
+        // Blendet das Info-Banner wieder aus
+        function hideBanner() {
+            document.getElementById('action-banner').classList.remove('show');
+        }
+
+        // Schreibt Einträge in das Protokoll-Fenster der Wurfhistorie
+        function logHistory(text) {
+            const logBox = document.getElementById('history-log');
+            logBox.innerHTML = `<div>${text}</div>` + logBox.innerHTML;
+        }
+        // Verbindungs-Handler für das native Bluetooth-System des GranBoards
+        document.getElementById('btnConnect').addEventListener('click', async () => {
+            const statusBox = document.getElementById('btStatusBox');
+            try {
+                statusBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Suche Board...';
+                const device = await navigator.bluetooth.requestDevice({
+                    filters: [{ services: [GRANBOARD_SERVICE_UUID.toLowerCase()] }]
+                });
+
+                const server = await device.gatt.connect();
+                const service = await server.getPrimaryService(GRANBOARD_SERVICE_UUID.toLowerCase());
+                const characteristic = await service.getCharacteristic(GRANBOARD_CHAR_UUID.toLowerCase());
+
+                await characteristic.startNotifications();
+                characteristic.addEventListener('characteristicvaluechanged', (e) => {
+    let value = e.target.value;
+    
+    // Bytes in Text umwandeln
+    let uint8Array = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+    let rawString = new TextDecoder().decode(uint8Array);
+    
+    // Entfernt @, Zeilenumbrüche und Leerzeichen
+    let cleanString = rawString.replace(/[@\r\n]/g, '').trim();
+    
+    console.log("👉 Signal vom Board erhalten:", `"${cleanString}"`);
+
+    // 1. Regulärer Treffer aus der Matrix (z.B. ein Segment auf dem Board)
+    if (EXACT_BOARD_MATRIX[cleanString]) {
+        processHit(cleanString);
+    } 
+    // 2. ERWEITERTER SENSOR-SCHUTZ: Fängt jetzt auch das "OUT"-Signal deines Boards ab!
+    else if (cleanString === "OUT" || cleanString === "MISS" || cleanString === "" || cleanString === "M" || cleanString === "O" || cleanString.includes("0.0")) {
+        console.log("🎯 Vorbeisensor erkannt (OUT) -> Übergebe 'MISS' an Spiellogik.");
+        processHit("MISS");
+    } 
+    // 3. Unbekanntes Signal
+    else {
+        console.warn(`⚠️ Unbekannter Sensor-Code: "${cleanString}"`);
+    }
+});
+
+
+                statusBox.className = "bt-status connected";
+                statusBox.innerHTML = '<i class="fa-solid fa-toggle-on"></i> Board Aktiv';
+                logHistory("GranBoard erfolgreich via Bluetooth verbunden!");
+            } catch (err) {
+                console.error(err);
+                statusBox.className = "bt-status";
+                statusBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Fehler';
+                alert("Bluetooth-Verbindung fehlgeschlagen. Tastatur-Simulation aktiv: Drücke die Tasten 1-9 für Single-Treffer auf dem Keyboard oder 'B' für Bullseye.");
+            }
+        });
+
+        // Tastatur-Simulation für Testläufe ohne echte Dartscheibe
+        window.addEventListener('keydown', (e) => {
+            if(!isNaN(e.key) && e.key !== ' ' && e.key !== '0') {
+                processHit(`${e.key}.1`); // Simuliert Single-Treffer der entsprechenden Zahl
+            }
+            if(e.key.toLowerCase() === 'b') {
+                processHit("8.0"); // Simuliert ein Single Bull
+            }
+        });
+        // ==========================================
+        // 4. ANIMIERTES 3D DARTBOARD (THREE.JS CORES)
+        // ==========================================
+        const container = document.getElementById('canvas3d-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        // Lichtquellen für realistische Schattierung
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(5, 5, 10);
+        scene.add(dirLight);
+
+        // Gruppen-Objekt für weiche Rotationsübergänge
+        const boardGroup = new THREE.Group();
+        scene.add(boardGroup);
+
+        // Geometrien für die Dartscheibe generieren
+        const boardBaseGeo = new THREE.CylinderGeometry(4, 4, 0.2, 40);
+        const boardBaseMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.6 });
+        const boardBase = new THREE.Mesh(boardBaseGeo, boardBaseMat);
+        boardBase.rotation.x = Math.PI / 2;
+        boardGroup.add(boardBase);
+
+        // Zentrales Bullseye-Segment simulieren
+        const innerBullGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.25, 20);
+        const innerBullMat = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+        const innerBull = new THREE.Mesh(innerBullGeo, innerBullMat);
+        innerBull.rotation.x = Math.PI / 2;
+        innerBull.name = "seg-25";
+        boardGroup.add(innerBull);
+
+        camera.position.z = 8;
+        // 3D Render-Loop für flüssige Bewegungen
+        function animate() {
+            requestAnimationFrame(animate);
+            // Sanfte, moderne Idle-Rotation der Dartscheibe im Raum
+            boardGroup.rotation.y = Math.sin(Date.now() * 0.001) * 0.03;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+function animateSegmentHit(val, multiplier) {
+    // 1. Text bestimmen (T = Triple, D = Double, S = Single)
+    let prefix = "S";
+    let textColor = "#00f0ff"; // Cyan für Single
+    let shadowColor = "rgba(0,240,255,0.8)";
+
+    if (multiplier === 2) {
+        prefix = "D";
+        textColor = "#39ff14"; // Neongrün für Double
+        shadowColor = "rgba(57,255,20,0.8)";
+    } else if (multiplier === 3) {
+        prefix = "T";
+        textColor = "#ffaa00"; // Goldgelb für Triple
+        shadowColor = "rgba(255,170,0,0.8)";
+    }
+
+    // Spezialfall Bullseye / Fehlwurf
+    let displayText = `${prefix}${val}`;
+    if (val === 25) {
+        displayText = multiplier === 2 ? "D-BULL" : "BULL";
+        textColor = "#ff0055"; // Pink/Rot für Bull
+        shadowColor = "rgba(255,0,85,0.8)";
+    }
+    if (val === 0) {
+        displayText = "MISS";
+        textColor = "#ff3333";
+        shadowColor = "rgba(255,51,51,0.8)";
+    }
+
+    // 2. Element im HTML erzeugen, falls es noch nicht existiert
+    let popup = document.getElementById('hit-popup-element');
+    if (!popup) {
+        popup = document.createElement('div');
+        popup.id = 'hit-popup-element';
+        popup.className = 'hit-popup';
+        document.body.appendChild(popup);
+    }
+
+    // 3. Werte zuweisen und Animation starten
+    popup.innerText = displayText;
+    popup.style.color = textColor;
+    popup.style.textShadow = `0 0 30px ${shadowColor}, 0 0 50px ${textColor}`;
+    
+    // Klasse hinzufügen zum Einblenden
+    popup.classList.add('show');
+
+    // 4. Nach 1,2 Sekunden wieder ausblenden
+    setTimeout(() => {
+        popup.classList.remove('show');
+    }, 1200);
+}
+
+
+
+        // Automatisches Anpassung der 3D-Ansicht bei Fenstergrößenänderung
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+
+
+document.addEventListener("DOMContentLoaded", () => {
+ renderMembersListSidebar();
+ checkStartButtonLive(); // <-- HIER ERGÄNZEN
+});
+
+
+
+
+    </script>
+</body>
+</html>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             x = "S";
+    let textColor = "#00f0ff"; // Cyan für Single
+    let shadowColor = "rgba(0,240,255,0.8)";
+
+    if (multiplier === 2) {
+        prefix = "D";
+        textColor = "#39ff14"; // Neongrün für Double
+        shadowColor = "rgba(57,255,20,0.8)";
+    } else if (multiplier === 3) {
+        prefix = "T";
+        textColor = "#ffaa00"; // Goldgelb für Triple
+        shadowColor = "rgba(255,170,0,0.8)";
+    }
+
+    // Spezialfall Bullseye / Fehlwurf
+    let displayText = `${prefix}${val}`;
+    if (val === 25) {
+        displayText = multiplier === 2 ? "D-BULL" : "BULL";
+        textColor = "#ff0055"; // Pink/Rot für Bull
+        shadowColor = "rgba(255,0,85,0.8)";
+    }
+    if (val === 0) {
+        displayText = "MISS";
+        textColor = "#ff3333";
+        shadowColor = "rgba(255,51,51,0.8)";
+    }
+
+    // 2. Element im HTML erzeugen, falls es noch nicht existiert
+    let popup = document.getElementById('hit-popup-element');
+    if (!popup) {
+        popup = document.createElement('div');
+        popup.id = 'hit-popup-element';
+        popup.className = 'hit-popup';
+        document.body.appendChild(popup);
+    }
+
+    // 3. Werte zuweisen und Animation starten
+    popup.innerText = displayText;
+    popup.style.color = textColor;
+    popup.style.textShadow = `0 0 30px ${shadowColor}, 0 0 50px ${textColor}`;
+    
+    // Klasse hinzufügen zum Einblenden
+    popup.classList.add('show');
+
+    // 4. Nach 1,2 Sekunden wieder ausblenden
+    setTimeout(() => {
+        popup.classList.remove('show');
+    }, 1200);
+}
+
+
+
+        // Automatisches Anpassung der 3D-Ansicht bei Fenstergrößenänderung
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+    </script>
+</body>
+</html>
