@@ -49,29 +49,67 @@ body {
     z-index: 1;
 }
 
+/* --- AUTOMATISCHE, RESPONSIVE SIDEBAR FÜR HANDY & TABLET --- */
 .sidebar {
  position: fixed;
- top: 0; 
- left: 0; /* ÄNDERUNG: Startet jetzt direkt geöffnet im Bild! */
- width: 380px;
+ top: 0;
+ left: 0;
+ width: 380px; /* Standardbreite für große PC-Monitore */
  height: 100vh;
- background: rgba(10, 14, 28, 0.95);
+ background: rgba(10, 14, 28, 0.96);
  border-right: 2px solid var(--accent-cyan);
  padding: 20px;
  display: flex;
  flex-direction: column;
- gap: 15px;
+ gap: 12px;
  overflow-y: auto;
  backdrop-filter: blur(15px);
  box-shadow: 10px 0 30px rgba(0,0,0,0.7);
- transition: left 0.4s ease-in-out;
+ transition: all 0.4s ease-in-out;
  z-index: 200;
 }
 
-
 .sidebar.open {
-    left: 0;
+ left: 0;
 }
+
+/* 📱 AUTOMATISCHE ANPASSUNG FÜR SMARTPHONES (Querformat / Landscape) */
+@media screen and (max-width: 896px) and (orientation: landscape) {
+ .sidebar {
+ width: 260px; /* Schmalere Sidebar auf dem Handy, damit mehr Platz für das 3D Board bleibt */
+ padding: 10px;
+ gap: 8px;
+ }
+ .sidebar h1 {
+ font-size: 16px; /* Kleinere Überschrift */
+ margin-bottom: 5px;
+ }
+ .section-box {
+ padding: 8px; /* Kompaktere Boxen */
+ }
+ select, input, button {
+ padding: 8px;
+ font-size: 12px; /* Kleinere Schrift für Felder auf dem Handy */
+ margin-bottom: 6px;
+ }
+ .settings-toggle-btn {
+ left: 275px !important; /* Menü-Button rückt näher heran */
+ padding: 6px 12px;
+ font-size: 13px;
+ }
+}
+
+/* 📑 AUTOMATISCHE ANPASSUNG FÜR TABLETS (z.B. iPad / Samsung Galaxy Tab) */
+@media screen and (min-width: 897px) and (max-width: 1280px) {
+ .sidebar {
+ width: 320px; /* Mittlere Breite für Tablets */
+ padding: 15px;
+ }
+ .settings-toggle-btn {
+ left: 335px !important;
+ }
+}
+
 
 .settings-toggle-btn {
  position: absolute;
