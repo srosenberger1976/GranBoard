@@ -553,7 +553,44 @@ body {
  <label>Pfeilwechsel-Kürzung</label>
  <select id="split-start"><option value="12">Ab Pfeil 12</option><option value="15">Ab Pfeil 15</option></select>
  </div>
- </div>
+
+
+ <!-- SOUND OPTIONS -->
+  <div class="section-title" style="margin-top: 20px;"><i class="fa-solid fa-volume-high"></i> Sound-Konfiguration</div>
+
+  <label>Single Treffer</label>
+  <input type="text" id="sound_Single_Input" onchange="saveSoundSettings()">
+
+  <label>Double Treffer</label>
+  <input type="text" id="sound_Double_Input" onchange="saveSoundSettings()">
+
+  <label>Triple Treffer</label>
+  <input type="text" id="sound_Triple_Input" onchange="saveSoundSettings()">
+
+  <label>Triple 20 Spezial</label>
+  <input type="text" id="sound_T20_Input" onchange="saveSoundSettings()">
+
+  <label>Single Bull</label>
+  <input type="text" id="sound_SingleBull_Input" onchange="saveSoundSettings()">
+
+  <label>Double Bull (Bullseye)</label>
+  <input type="text" id="sound_DoubleBull_Input" onchange="saveSoundSettings()">
+
+  <label>Bust (Überworfen)</label>
+  <input type="text" id="sound_Bust_Input" onchange="saveSoundSettings()">
+
+  <label>Spielerwechsel</label>
+  <input type="text" id="sound_Change_Input" onchange="saveSoundSettings()">
+
+  <label>Gewonnen (Sieg)</label>
+  <input type="text" id="sound_Win_Input" onchange="saveSoundSettings()">
+  <!-- ENDE DES NEUEN BLOCKS -->
+
+
+
+
+
+ </div> 
 
  <!-- MITGLIEDER AUSWAHL (JETZT ALS REINER POPUP-TRIGGER) -->
  <div class="section-box">
@@ -1346,39 +1383,65 @@ function processHit(matrixKey) {
 
  animateSegmentHit(hit.v, hit.m);
  // --- AUTOMATISCHE SOUND- & SPRACH-ENGINE ---
- try {
- // 1. Ein kurzer, knackiger Arcade-Piepton bei jedem Treffer
- const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
- const oscillator = audioCtx.createOscillator();
- const gainNode = audioCtx.createGain();
- oscillator.connect(gainNode);
- gainNode.connect(audioCtx.destination);
- 
- oscillator.type = 'sine';
- oscillator.frequency.setValueAtTime(hit.m === 3 ? 880 : (hit.m === 2 ? 660 : 440), audioCtx.currentTime);
- gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
- 
- oscillator.start();
- gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.1);
- oscillator.stop(audioCtx.currentTime + 0.1);
- 
- // 2. Sprach-Ansage der Punkte auf Deutsch
- let speechText = "";
- if (hit.v === 0) speechText = "Fehlwurf";
- else if (hit.v === 25) speechText = hit.m === 2 ? "Doppel Bull" : "Bullseye";
- else {
- let prefixText = hit.m === 3 ? "Dreifach " : (hit.m === 2 ? "Doppel " : "");
- speechText = `${prefixText}${hit.v}`;
- }
- 
- const utterance = new SpeechSynthesisUtterance(speechText);
- utterance.lang = 'de-DE';
- utterance.rate = 1.25; // Schön knackig und zügig gesprochen
- window.speechSynthesis.speak(utterance);
- } catch(audioErr) {
- console.error("Audio-Fehler:", audioErr);
- }
- 
+  try {
+    let soundFile = "";
+
+    // 1. Prüfen, ob der aktuelle Wurf ein BUST (überworfen) war
+    if (isBust) {
+      soundFile = localStorage.getItem('mkk_sound_bust') || 'überworfen.wav';
+    } 
+    // 2. Spezialfälle für Triple 17, 18, 19 und 20 abfangen
+    else if (hit.m === 3 && hit.v === 20) {
+      soundFile = localStorage.getItem('mkk_sound_t20') || 'Trippel20-lauter.wav';
+    } else if (hit.m === 3 && hit.v === 19) {
+      soundFile = localStorage.getItem('mkk_sound_t19') || 'Trippel19-lauter.wav';
+    } else if (hit.m === 3 && hit.v === 18) {
+      soundFile = localStorage.getItem('mkk_sound_t18') || 'Trippel18-lauter.wav';
+    } else if (hit.m === 3 && hit.v === 17) {
+      soundFile = localStorage.getItem('mkk_sound_t17') || 'Trippel17-lauter.wav';
+    } 
+    // 3. Reguläre Segmente und Bullseye zuordnen
+    else if (hit.v === 0) {
+      soundFile = localStorage.getItem('mkk_sound_miss') || 'Vorbei.wav';
+    } else if (hit.v === 25 && hit.m === 1) {
+      soundFile = localStorage.getItem('mkk_sound_sbull') || 'Bull.wav';
+    } else if (hit.v === 25 && hit.m === 2) {
+      soundFile = localStorage.getItem('mkk_sound_dbull') || 'Bull-lauter.wav';
+    } else if (hit.m === 3) {
+      soundFile = localStorage.getItem('mkk_sound_triple') || 'Trippel-pip.wav';
+    } else if (hit.m === 2) {
+      soundFile = localStorage.getItem('mkk_sound_double') || 'Doppel-lauter.wav';
+    } else {
+      soundFile = localStorage.getItem('mkk_sound_single') || 'Einfach-pip.wav';
+    }
+
+    // Sound abspielen, falls vorhanden
+    if (soundFile !== "") {
+      const audio = new Audio(soundFile);
+      audio.play().catch(e => console.log("Audio blockiert oder Datei fehlt:", e));
+    }
+
+    // 4. Sprach-Ansage der Punkte auf Deutsch (nur wenn kein Bust/Sieg vorliegt)
+    if (!isBust && p.score !== 0) {
+      let speechText = "";
+      if (hit.v === 0) speechText = "Fehlwurf";
+      else if (hit.v === 25) speechText = hit.m === 2 ? "Doppel Bull" : "Bullseye";
+      else {
+        let prefixText = hit.m === 3 ? "Dreifach " : (hit.m === 2 ? "Doppel " : "");
+        speechText = `${prefixText}${hit.v}`;
+      }
+      const utterance = new SpeechSynthesisUtterance(speechText);
+      utterance.lang = 'de-DE';
+      utterance.rate = 1.25; 
+      window.speechSynthesis.speak(utterance);
+    }
+
+  } catch(audioErr) {
+    console.error("Audio-Fehler in Spiellogik:", audioErr);
+  }
+
+
+
  // Merkt sich die Punkte exakt VOR dem ersten Wurf der Runde für einen potenziellen BUST
  if (dartsThrownThisTurn === 1) {
  p.scoreAtStartOfTurn = p.score;
@@ -1517,9 +1580,12 @@ function processHit(matrixKey) {
  // Gewonnen-Bedingung auswerten
  if(p.score === 0 && !isBust && pointsToSubtract > 0) { 
  let masterMember = membersData[p.memberId];
- if (masterMember) {
- masterMember.x01++; 
- }
+    if (masterMember) {
+      masterMember.x01++;
+      // HIER EINFÜGEN:
+      let winSound = localStorage.getItem('mkk_sound_win') || 'Gewonnen.wav';
+      new Audio(winSound).play().catch(e => {});
+    }
  
  logHistory(` ${p.name} gewinnt das X01-Leg für Team ${p.team}!`); 
  showBanner(`${p.name} SIEGT!`); 
@@ -1623,10 +1689,14 @@ function processHit(matrixKey) {
 } // <--- Diese Klammer beendet die Funktion processHit(matrixKey) sauber!
 
 
+function triggerTurnChange() {
+  // HIER ALS ERSTE ZEILE EINFÜGEN:
+  let changeSound = localStorage.getItem('mkk_sound_change') || 'spielerwechsel.wav';
+  new Audio(changeSound).play().catch(e => {});
 
- function triggerTurnChange() {
-            isProcessingTurnChange = true;
-            showBanner("PFEILE RAUSZIEHEN!");
+  isProcessingTurnChange = true;
+  showBanner("PFEILE RAUSZIEHEN!");
+
             
             setTimeout(() => {
                 dartsThrownThisTurn = 0;
@@ -1786,7 +1856,6 @@ function processHit(matrixKey) {
         animate();
 
 function animateSegmentHit(val, multiplier) {
-    // 1. Text bestimmen (T = Triple, D = Double, S = Single)
     let prefix = "S";
     let textColor = "#00f0ff"; // Cyan für Single
     let shadowColor = "rgba(0,240,255,0.8)";
@@ -1814,7 +1883,7 @@ function animateSegmentHit(val, multiplier) {
         shadowColor = "rgba(255,51,51,0.8)";
     }
 
-    // 2. Element im HTML erzeugen, falls es noch nicht existiert
+    // Element im HTML erzeugen, falls es noch nicht existiert
     let popup = document.getElementById('hit-popup-element');
     if (!popup) {
         popup = document.createElement('div');
@@ -1823,7 +1892,7 @@ function animateSegmentHit(val, multiplier) {
         document.body.appendChild(popup);
     }
 
-    // 3. Werte zuweisen und Animation starten
+    // Werte zuweisen und Animation starten
     popup.innerText = displayText;
     popup.style.color = textColor;
     popup.style.textShadow = `0 0 30px ${shadowColor}, 0 0 50px ${textColor}`;
@@ -1831,91 +1900,62 @@ function animateSegmentHit(val, multiplier) {
     // Klasse hinzufügen zum Einblenden
     popup.classList.add('show');
 
-    // 4. Nach 1,2 Sekunden wieder ausblenden
+    // Nach 1,2 Sekunden wieder ausblenden
     setTimeout(() => {
         popup.classList.remove('show');
     }, 1200);
 }
 
-
-
-        // Automatisches Anpassung der 3D-Ansicht bei Fenstergrößenänderung
-        window.addEventListener('resize', () => {
-            camera.aspect = container.clientWidth / container.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(container.clientWidth, container.clientHeight);
-        });
-
-
-document.addEventListener("DOMContentLoaded", () => {
- renderMembersListSidebar();
- checkStartButtonLive(); // <-- HIER ERGÄNZEN
+// Automatische Anpassung der 3D-Ansicht bei Fenstergrößenänderung
+window.addEventListener('resize', () => {
+    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(container.clientWidth, container.clientHeight);
 });
 
-
-
-
-    </script>
-</body>
-</html>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             x = "S";
-    let textColor = "#00f0ff"; // Cyan für Single
-    let shadowColor = "rgba(0,240,255,0.8)";
-
-    if (multiplier === 2) {
-        prefix = "D";
-        textColor = "#39ff14"; // Neongrün für Double
-        shadowColor = "rgba(57,255,20,0.8)";
-    } else if (multiplier === 3) {
-        prefix = "T";
-        textColor = "#ffaa00"; // Goldgelb für Triple
-        shadowColor = "rgba(255,170,0,0.8)";
-    }
-
-    // Spezialfall Bullseye / Fehlwurf
-    let displayText = `${prefix}${val}`;
-    if (val === 25) {
-        displayText = multiplier === 2 ? "D-BULL" : "BULL";
-        textColor = "#ff0055"; // Pink/Rot für Bull
-        shadowColor = "rgba(255,0,85,0.8)";
-    }
-    if (val === 0) {
-        displayText = "MISS";
-        textColor = "#ff3333";
-        shadowColor = "rgba(255,51,51,0.8)";
-    }
-
-    // 2. Element im HTML erzeugen, falls es noch nicht existiert
-    let popup = document.getElementById('hit-popup-element');
-    if (!popup) {
-        popup = document.createElement('div');
-        popup.id = 'hit-popup-element';
-        popup.className = 'hit-popup';
-        document.body.appendChild(popup);
-    }
-
-    // 3. Werte zuweisen und Animation starten
-    popup.innerText = displayText;
-    popup.style.color = textColor;
-    popup.style.textShadow = `0 0 30px ${shadowColor}, 0 0 50px ${textColor}`;
-    
-    // Klasse hinzufügen zum Einblenden
-    popup.classList.add('show');
-
-    // 4. Nach 1,2 Sekunden wieder ausblenden
-    setTimeout(() => {
-        popup.classList.remove('show');
-    }, 1200);
+// Sound-Einstellungen im LocalStorage speichern
+function saveSoundSettings() {
+  localStorage.setItem('mkk_sound_single', document.getElementById('sound_Single_Input').value.trim() || 'Einfach-pip.wav');
+  localStorage.setItem('mkk_sound_double', document.getElementById('sound_Double_Input').value.trim() || 'Doppel-lauter.wav');
+  localStorage.setItem('mkk_sound_triple', document.getElementById('sound_Triple_Input').value.trim() || 'Trippel-pip.wav');
+  localStorage.setItem('mkk_sound_t20', document.getElementById('sound_T20_Input').value.trim() || 'Trippel20-lauter.wav');
+  localStorage.setItem('mkk_sound_sbull', document.getElementById('sound_SingleBull_Input').value.trim() || 'Bull.wav');
+  localStorage.setItem('mkk_sound_dbull', document.getElementById('sound_DoubleBull_Input').value.trim() || 'Bull-lauter.wav');
+  localStorage.setItem('mkk_sound_bust', document.getElementById('sound_Bust_Input').value.trim() || 'überworfen.wav');
+  localStorage.setItem('mkk_sound_change', document.getElementById('sound_Change_Input').value.trim() || 'spielerwechsel.wav');
+  localStorage.setItem('mkk_sound_win', document.getElementById('sound_Win_Input').value.trim() || 'Gewonnen.wav');
 }
 
+// Gespeicherte Sound-Einstellungen beim Laden der App wieder in die Felder eintragen
+function loadSoundSettings() {
+  if (document.getElementById('sound_Single_Input')) {
+    document.getElementById('sound_Single_Input').value = localStorage.getItem('mkk_sound_single') || 'Einfach-pip.wav';
+    document.getElementById('sound_Double_Input').value = localStorage.getItem('mkk_sound_double') || 'Doppel-lauter.wav';
+    document.getElementById('sound_Triple_Input').value = localStorage.getItem('mkk_sound_triple') || 'Trippel-pip.wav';
+    document.getElementById('sound_T20_Input').value = localStorage.getItem('mkk_sound_t20') || 'Trippel20-lauter.wav';
+    document.getElementById('sound_SingleBull_Input').value = localStorage.getItem('mkk_sound_sbull') || 'Bull.wav';
+    document.getElementById('sound_DoubleBull_Input').value = localStorage.getItem('mkk_sound_dbull') || 'Bull-lauter.wav';
+    document.getElementById('sound_Bust_Input').value = localStorage.getItem('mkk_sound_bust') || 'überworfen.wav';
+    document.getElementById('sound_Change_Input').value = localStorage.getItem('mkk_sound_change') || 'spielerwechsel.wav';
+    document.getElementById('sound_Win_Input').value = localStorage.getItem('mkk_sound_win') || 'Gewonnen.wav';
+  }
+}
 
+// App initialisieren, wenn das Dokument bereit ist
+document.addEventListener("DOMContentLoaded", () => {
+  renderMembersListSidebar();
+  checkStartButtonLive();
+  loadSoundSettings();
+});
 
-        // Automatisches Anpassung der 3D-Ansicht bei Fenstergrößenänderung
-        window.addEventListener('resize', () => {
-            camera.aspect = container.clientWidth / container.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(container.clientWidth, container.clientHeight);
-        });
-    </script>
+// PWA Service Worker Registrierung
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('Service Worker registriert!', reg))
+      .catch(err => console.log('Service Worker Fehler:', err));
+  });
+}
+</script>
 </body>
 </html>
