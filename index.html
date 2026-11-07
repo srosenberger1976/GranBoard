@@ -1358,218 +1358,135 @@ function updateHud() {
 
 
 
-
-
-
-
-
-
-
-
-
 function processHit(matrixKey) {
  if(activePlayers.length === 0 || isProcessingTurnChange) return;
- 
  const hit = EXACT_BOARD_MATRIX[matrixKey] || EXACT_BOARD_MATRIX["MISS"];
  const p = activePlayers[currentPlayerIdx];
  const points = hit.v * hit.m;
- 
- // =========================================================================
- // KORREKTUR: WURFE IN JEDEM MODUS HOCHZÄHLEN (FÜR AUTOMATISCHEN WECHSEL)
- // =========================================================================
+
+ // Würfe hochzählen
  dartsThrownThisTurn++; 
  p.totalDarts++; 
- // =========================================================================
-
+ 
+ // 3D-Treffer-Animation starten
  animateSegmentHit(hit.v, hit.m);
- // --- AUTOMATISCHE SOUND- & SPRACH-ENGINE ---
-  try {
-    let soundFile = "";
 
-    // 1. Prüfen, ob der aktuelle Wurf ein BUST (überworfen) war
-    if (isBust) {
-      soundFile = localStorage.getItem('mkk_sound_bust') || 'überworfen.wav';
-    } 
-    // 2. Spezialfälle für Triple 17, 18, 19 und 20 abfangen
-    else if (hit.m === 3 && hit.v === 20) {
-      soundFile = localStorage.getItem('mkk_sound_t20') || 'Trippel20-lauter.wav';
-    } else if (hit.m === 3 && hit.v === 19) {
-      soundFile = localStorage.getItem('mkk_sound_t19') || 'Trippel19-lauter.wav';
-    } else if (hit.m === 3 && hit.v === 18) {
-      soundFile = localStorage.getItem('mkk_sound_t18') || 'Trippel18-lauter.wav';
-    } else if (hit.m === 3 && hit.v === 17) {
-      soundFile = localStorage.getItem('mkk_sound_t17') || 'Trippel17-lauter.wav';
-    } 
-    // 3. Reguläre Segmente und Bullseye zuordnen
-    else if (hit.v === 0) {
-      soundFile = localStorage.getItem('mkk_sound_miss') || 'Vorbei.wav';
-    } else if (hit.v === 25 && hit.m === 1) {
-      soundFile = localStorage.getItem('mkk_sound_sbull') || 'Bull.wav';
-    } else if (hit.v === 25 && hit.m === 2) {
-      soundFile = localStorage.getItem('mkk_sound_dbull') || 'Bull-lauter.wav';
-    } else if (hit.m === 3) {
-      soundFile = localStorage.getItem('mkk_sound_triple') || 'Trippel-pip.wav';
-    } else if (hit.m === 2) {
-      soundFile = localStorage.getItem('mkk_sound_double') || 'Doppel-lauter.wav';
-    } else {
-      soundFile = localStorage.getItem('mkk_sound_single') || 'Einfach-pip.wav';
-    }
+ // Hilfsvariablen für die Sound-Ausgabe am Ende der Funktion
+ let isX01Bust = false;
+ let isX01Win = false;
 
-    // Sound abspielen, falls vorhanden
-    if (soundFile !== "") {
-      const audio = new Audio(soundFile);
-      audio.play().catch(e => console.log("Audio blockiert oder Datei fehlt:", e));
-    }
-
-    // 4. Sprach-Ansage der Punkte auf Deutsch (nur wenn kein Bust/Sieg vorliegt)
-    if (!isBust && p.score !== 0) {
-      let speechText = "";
-      if (hit.v === 0) speechText = "Fehlwurf";
-      else if (hit.v === 25) speechText = hit.m === 2 ? "Doppel Bull" : "Bullseye";
-      else {
-        let prefixText = hit.m === 3 ? "Dreifach " : (hit.m === 2 ? "Doppel " : "");
-        speechText = `${prefixText}${hit.v}`;
-      }
-      const utterance = new SpeechSynthesisUtterance(speechText);
-      utterance.lang = 'de-DE';
-      utterance.rate = 1.25; 
-      window.speechSynthesis.speak(utterance);
-    }
-
-  } catch(audioErr) {
-    console.error("Audio-Fehler in Spiellogik:", audioErr);
-  }
-
-
-
- // Merkt sich die Punkte exakt VOR dem ersten Wurf der Runde für einen potenziellen BUST
- if (dartsThrownThisTurn === 1) {
- p.scoreAtStartOfTurn = p.score;
- }
- logHistory(`${p.name}: ${hit.t} ${hit.v} (${points} Pkt)`);
-
- // HIER FOLGT JETZT DEINE BESTEHENDE LOGIK:
+ // =========================================================================
  // --- CRICKET & MAXI-CRICKET LOGIK MIT PUNKTEN ---
+ // =========================================================================
  if(currentSessionMode === 'cricket' || currentSessionMode === 'maxicricket') {
- // ... ab hier bleibt der restliche Code unverändert!
+ if(p.cricketHits[hit.v] !== undefined) {
+ let remainingMultiplier = hit.m;
+ let oldHits = p.cricketHits[hit.v];
+ 
+ // Eigene Treffer hochzählen (bis max 3)
+ p.cricketHits[hit.v] = Math.min(3, oldHits + remainingMultiplier);
+ 
+ // Punkteberechnung bei geschlossenen Feldern
+ let hitsBeforeScoring = 3 - oldHits;
+ if (remainingMultiplier > hitsBeforeScoring) {
+ let scoringMultiplier = remainingMultiplier - hitsBeforeScoring;
+ 
+ // Prüfen, ob mindestens ein anderer Spieler dieses Feld noch offen hat
+ let opponentsHaveItOpen = activePlayers.some((opp, idx) => idx !== currentPlayerIdx && opp.cricketHits[hit.v] < 3);
+ 
+ if (opponentsHaveItOpen) {
+ p.score += (hit.v * scoringMultiplier);
+ logHistory(`${p.name} punktet! +${hit.v * scoringMultiplier} PTS auf der ${hit.v}`);
+ }
+ }
+ 
+ // Prüfen auf Siegbedingung im Cricket
+ let allClosed = Object.values(p.cricketHits).every(val => val >= 3);
+ let highestScore = Math.max(...activePlayers.map(player => player.score));
+ 
+ if(allClosed && p.score >= highestScore) {
+ let masterMember = membersData[p.memberId];
+ if (masterMember) {
+ if (currentSessionMode === 'maxicricket') masterMember.maxicricket++;
+ else masterMember.cricket++;
+ }
+ 
+ logHistory(` 🎉 ${p.name} gewinnt das Cricket-Leg!`);
+ showBanner(`${p.name} SIEGT!`);
+ renderMembersListSidebar();
+ 
+ // Gewonnen-Sound sofort abspielen
+ let winSound = localStorage.getItem('mkk_sound_win') || 'Gewonnen.wav';
+ new Audio(winSound).play().catch(e => {});
+ 
+ setTimeout(() => {
+ hideBanner();
+ activePlayers.forEach(player => {
+ player.score = 0;
+ player.totalDarts = 0;
+ player.cricketHits = (currentSessionMode === 'maxicricket') ? 
+ {10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0,18:0,19:0,20:0,25:0} : 
+ {15:0,16:0,17:0,18:0,19:0,20:0,25:0};
+ });
+ currentPlayerIdx = 0; dartsThrownThisTurn = 0;
+ updateHud();
+ }, 5000);
+ return;
+ }
+ }
+ }
 
-                if(p.cricketHits[hit.v] !== undefined) {
-                    let remainingMultiplier = hit.m;
-                    let oldHits = p.cricketHits[hit.v];
-                    
-                    // 1. Eigene Treffer hochzählen (bis max 3)
-                    p.cricketHits[hit.v] = Math.min(3, oldHits + remainingMultiplier);
-                    
-                    // 2. Wenn das Feld bereits vor dem Wurf offen war oder der Wurf die 3 überschreitet, gibt es Punkte
-                    let hitsBeforeScoring = 3 - oldHits;
-                    if (remainingMultiplier > hitsBeforeScoring) {
-                        let scoringMultiplier = remainingMultiplier - hitsBeforeScoring;
-                        
-                        // Prüfen, ob mindestens ein anderer Spieler dieses Feld noch offen hat
-                        let opponentsHaveItOpen = activePlayers.some((opp, idx) => idx !== currentPlayerIdx && opp.cricketHits[hit.v] < 3);
-                        
-                        if (opponentsHaveItOpen) {
-                            // Punkte auf das aktuelle Cricket-Konto gutschreiben
-                            p.score += (hit.v * scoringMultiplier);
-                            logHistory(`${p.name} punktet! +${hit.v * scoringMultiplier} PTS auf der ${hit.v}`);
-                        }
-                    }
-                    
-                    // Prüfen, ob der Spieler alle Felder geschlossen hat UND die meisten Punkte hat
-                    let allClosed = Object.values(p.cricketHits).every(val => val >= 3);
-                    let highestScore = Math.max(...activePlayers.map(player => player.score));
-                    
-                    if(allClosed && p.score >= highestScore) {
-                        // Sieg im richtigen Modus in der Hauptliste verbuchen
-                        let masterMember = membersData[p.memberId];
-                        if (masterMember) {
-                            if (currentSessionMode === 'maxicricket') masterMember.maxicricket++;
-                            else masterMember.cricket++;
-                        }
-                        
-                        logHistory(`🏆 ${p.name} gewinnt das Cricket-Leg!`);
-                        showBanner(`${p.name} SIEGT!`);
-                        renderMembersListSidebar(); // Sidebar-Statistik sofort aktualisieren!
-                        
-                        setTimeout(() => {
-                            hideBanner();
-                            activePlayers.forEach(player => {
-                                player.score = 0;
-                                player.totalDarts = 0;
-                                player.cricketHits = (currentSessionMode === 'maxicricket') ? 
-                                {10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0,18:0,19:0,20:0,25:0} : 
-                                {15:0,16:0,17:0,18:0,19:0,20:0,25:0};
-                            });
-                            currentPlayerIdx = 0; dartsThrownThisTurn = 0;
-                            updateHud();
-                        }, 5000);
-                        return;
-                    }
-
-
-                }
-            }
-
- // --- X01 & X01-TEAMS SPIELLOGIK (MIT KORREKTER MASTER/DOUBLE IN ENGINE) ---
- else if(currentSessionMode === 'x01' || currentSessionMode === 'x01_teams') 
- {
+ // =========================================================================
+ // --- X01 & X01-TEAMS SPIELLOGIK (INKLUSIVE EIN- UND AUSWURF) ---
+ // =========================================================================
+ else if(currentSessionMode === 'x01' || currentSessionMode === 'x01_teams') {
  const inMode = document.getElementById('x01-in')?.value || 'open';
  const outMode = document.getElementById('x01-out')?.value || 'open';
  const x01Target = parseInt(document.getElementById('x01-target').value) || 501;
- 
- let isBust = false;
  let pointsToSubtract = points;
  
- // =========================================================================
- // 1. EINWURF-PRÜFUNG (IN-MODUS LOGIK)
- // =========================================================================
+ // Einwurf-Prüfung
  if (p.score === x01Target) {
  if (inMode === 'double' && hit.m !== 2) {
- // Double In gewählt, aber kein Double getroffen -> Wurf ungültig (0 Punkte)
  pointsToSubtract = 0;
  logHistory(`${p.name}: Kein Einwurf (Benötigt DOPPEL)`);
  } else if (inMode === 'master' && hit.m < 2) {
- // Master In gewählt, aber kein Double, Triple oder Bull getroffen -> Ungültig
  pointsToSubtract = 0;
  logHistory(`${p.name}: Kein Einwurf (Benötigt DOPPEL / TRIPLE / BULL)`);
  } else if (inMode !== 'open') {
- logHistory(`🎯 ${p.name} ERFOLGREICH EINGEWORFEN mit ${hit.t} ${hit.v}!`);
+ logHistory(` 🎯 ${p.name} ERFOLGREICH EINGEWORFEN mit ${hit.t} ${hit.v}!`);
  }
  }
- // =========================================================================
  
  let potentialScore = p.score - pointsToSubtract;
  
- // 2. AUSWURF- & SPERR-LOGIK (NUR PRÜFEN, WENN DER WURF GÜLTIG WAR)
+ // Auswurf- & Sperr-Logik
  if (pointsToSubtract > 0) {
  if (potentialScore === 0) {
- if (outMode === 'double' && hit.m !== 2) isBust = true;
- if (outMode === 'master' && hit.m < 2) isBust = true;
- 
- if (!isBust && currentSessionMode === 'x01_teams') {
+ if (outMode === 'double' && hit.m !== 2) isX01Bust = true;
+ if (outMode === 'master' && hit.m < 2) isX01Bust = true;
+ if (!isX01Bust && currentSessionMode === 'x01_teams') {
  let myTeamScore = 0;
  let opponentTeamScore = 0;
- 
  activePlayers.forEach(player => {
  let currentScoreToCheck = (player.memberId === p.memberId) ? 0 : player.score;
  if (player.team === p.team) myTeamScore += currentScoreToCheck;
  else opponentTeamScore += currentScoreToCheck;
  });
- 
  if (myTeamScore > opponentTeamScore) {
- isBust = true;
- logHistory(` Sperr-Bust! Gegner haben weniger Punkte!`);
+ isX01Bust = true;
+ logHistory(` ⚠ Sperr-Bust! Gegner haben weniger Punkte!`);
  showBanner("SPERRE! BUST!");
  }
  }
  } else if (potentialScore < 2 && (outMode === 'double' || outMode === 'master')) {
- isBust = true;
+ isX01Bust = true;
  } else if (potentialScore < 0) {
- isBust = true;
+ isX01Bust = true;
  }
  }
  
- if (isBust) {
+ if (isX01Bust) {
  p.score = p.scoreAtStartOfTurn || p.score; 
  logHistory(` Bust! ${p.name} zurück auf ${p.score}`); 
  dartsThrownThisTurn = 3; 
@@ -1578,19 +1495,19 @@ function processHit(matrixKey) {
  }
  
  // Gewonnen-Bedingung auswerten
- if(p.score === 0 && !isBust && pointsToSubtract > 0) { 
+ if(p.score === 0 && !isX01Bust && pointsToSubtract > 0) { 
+ isX01Win = true;
  let masterMember = membersData[p.memberId];
-    if (masterMember) {
-      masterMember.x01++;
-      // HIER EINFÜGEN:
-      let winSound = localStorage.getItem('mkk_sound_win') || 'Gewonnen.wav';
-      new Audio(winSound).play().catch(e => {});
-    }
- 
- logHistory(` ${p.name} gewinnt das X01-Leg für Team ${p.team}!`); 
+ if (masterMember) {
+ masterMember.x01++;
+ }
+ logHistory(` 🏆 ${p.name} gewinnt das X01-Leg für Team ${p.team}!`); 
  showBanner(`${p.name} SIEGT!`); 
  renderMembersListSidebar();
- 
+
+ let winSound = localStorage.getItem('mkk_sound_win') || 'Gewonnen.wav';
+ new Audio(winSound).play().catch(e => {});
+
  setTimeout(() => {
  hideBanner();
  activePlayers.forEach(player => {
@@ -1603,90 +1520,145 @@ function processHit(matrixKey) {
  return; 
  }
  }
-
-
-
-
-
+ // =========================================================================
  // --- SPLIT SCORE LOGIK (DYNAMISCH FÜR MODUS 12 & 15) ---
+ // =========================================================================
  else if(currentSessionMode === 'split') {
-     const splitModus = parseInt(document.getElementById('split-start')?.value) || 12;
-     const aktuelleRunde = Math.floor((p.totalDarts - 1) / 3) + 1;
-     
-     // Die exakt gleichen Spielpläne wie im HUD abrufen
-     const spielplaene = {
-         12: {
-             1: { v: 12, m: 1 }, 2: { v: 13, m: 1 }, 3: { v: 14, m: 1 }, 4: { v: 0, m: 2 },
-             5: { v: 15, m: 1 }, 6: { v: 16, m: 1 }, 7: { v: 17, m: 1 }, 8: { v: 0, m: 3 },
-             9: { v: 18, m: 1 }, 10: { v: 19, m: 1 }, 11: { v: 20, m: 1 }, 12: { v: 25, m: 1 }, 13: { v: 25, m: 2 }
-         },
-         15: {
-             1: { v: 15, m: 1 }, 2: { v: 16, m: 1 }, 3: { v: 0, m: 2 }, 4: { v: 17, m: 1 },
-             5: { v: 18, m: 1 }, 6: { v: 0, m: 3 }, 7: { v: 19, m: 1 }, 8: { v: 20, m: 1 },
-             9: { v: 25, m: 1 }, 10: { v: 25, m: 2 }
-         }
-     };
-     
-     const ziel = spielplaene[splitModus][aktuelleRunde];
-     let isCorrectHit = false;
-
-     if (ziel) {
-         if (ziel.v === 0) {
-             // Sonderrunden: DOPPEL (m === 2) oder TRIPPLE (m === 3)
-             if (hit.m === ziel.m) isCorrectHit = true;
-         } else if (ziel.v === 25 && ziel.m === 1) {
-             // Runde BULL: Erlaubt sowohl Single Bull als auch Double Bull (v === 25 erfasst beide Typen)
-             if (hit.v === 25) isCorrectHit = true;
-         } else {
-             // Normale Single-Segmente oder die exakte D-BULL Abschlussrunde
-             if (hit.v === ziel.v && hit.m === ziel.m) isCorrectHit = true;
-         }
-     }
-
-     if (isCorrectHit) {
-         p.score += points; // Fügt den echten Wert des Wurfs hinzu
-         if (!p.roundHitsThisTurn) p.roundHitsThisTurn = 0;
-         p.roundHitsThisTurn++; 
-         logHistory(`🎯 Treffer! +${points} PTS`);
-     } else {
-         logHistory(`❌ Vorbeigeworfen`);
-     }
+ const splitModus = parseInt(document.getElementById('split-start')?.value) || 12;
+ const aktuelleRunde = Math.floor((p.totalDarts - 1) / 3) + 1;
+ 
+ const spielplaene = {
+ 12: {
+ 1: { v: 12, m: 1 }, 2: { v: 13, m: 1 }, 3: { v: 14, m: 1 }, 4: { v: 0, m: 2 },
+ 5: { v: 15, m: 1 }, 6: { v: 16, m: 1 }, 7: { v: 17, m: 1 }, 8: { v: 0, m: 3 },
+ 9: { v: 18, m: 1 }, 10: { v: 19, m: 1 }, 11: { v: 20, m: 1 }, 12: { v: 25, m: 1 }, 13: { v: 25, m: 2 }
+ },
+ 15: {
+ 1: { v: 15, m: 1 }, 2: { v: 16, m: 1 }, 3: { v: 0, m: 2 }, 4: { v: 17, m: 1 },
+ 5: { v: 18, m: 1 }, 6: { v: 0, m: 3 }, 7: { v: 19, m: 1 }, 8: { v: 20, m: 1 },
+ 9: { v: 25, m: 1 }, 10: { v: 25, m: 2 }
+ }
+ };
+ 
+ const ziel = spielplaene[splitModus][aktuelleRunde];
+ let isCorrectHit = false;
+ if (ziel) {
+ if (ziel.v === 0) {
+ if (hit.m === ziel.m) isCorrectHit = true;
+ } else if (ziel.v === 25 && ziel.m === 1) {
+ if (hit.v === 25) isCorrectHit = true;
+ } else {
+ if (hit.v === ziel.v && hit.m === ziel.m) isCorrectHit = true;
+ }
+ }
+ if (isCorrectHit) {
+ p.score += points; 
+ if (!p.roundHitsThisTurn) p.roundHitsThisTurn = 0;
+ p.roundHitsThisTurn++; 
+ logHistory(` Treffer! +${points} PTS`); 
+ } else {
+ logHistory(` Vorbeigeworfen`); 
+ }
  }
 
- 
-    // Aktualisiert das Display nach jedem einzelnen Wurf
-    updateHud();
+ // =========================================================================
+ // --- INTEGRATION DER SOUND- & SPRACH-ENGINE (ZENTRAL AM ENDE) ---
+ // =========================================================================
+ if (!isX01Win) {
+ try {
+ let soundFile = "";
 
-    // --- RUNDENENDE: DIESER BLOCK MUSS AUSSERHALB DER MODI STEHEN! ---
-    if (dartsThrownThisTurn >= 3) { 
-        
-        // Wenn wir im Split-Modus sind, führen wir zusätzlich die Halbierung aus
-        if (currentSessionMode === 'split') {
-            const mindestPfeile = parseInt(document.getElementById('split-start')?.value) || 12;
-            if (!p.roundHitsThisTurn || p.roundHitsThisTurn === 0) {
-                if (p.totalDarts > mindestPfeile) {
-                    const altePunktzahl = p.score;
-                    p.score = Math.round(p.score / 2);
-                    
-                    const exploContainer = document.createElement('div');
-                    exploContainer.className = 'split-explosion-overlay';
-                    exploContainer.innerHTML = `<div class="explosion-number">${altePunktzahl}<br><span style="font-size:4vw; color:#fff;">💥 ZERPLATZT AUF ${p.score} 💥</span></div>`;
-                    document.body.appendChild(exploContainer);
-                    
-                    setTimeout(() => { exploContainer.remove(); }, 2000);
-                    logHistory(`💥 Keine Treffer! ${p.name} fällt auf ${p.score}`);
-                } else {
-                    logHistory(`ℹ️ Keine Treffer, aber geschützt vor Pfeil ${mindestPfeile}`);
-                }
-            }
-            p.roundHitsThisTurn = 0;
-        }
-        
-        // JETZT ERREICHBAR FÜR ALLE MODI (X01, X01-Teams, Cricket, Split):
-        // Wechselt zum nächsten Spieler und blendet das "Pfeile rausziehen"-Banner ein
-        triggerTurnChange(); 
-    }
-} // <--- Diese Klammer beendet die Funktion processHit(matrixKey) sauber!
+ if (isX01Bust) {
+ soundFile = localStorage.getItem('mkk_sound_bust') || 'überworfen.wav';
+ } 
+ else if (hit.m === 3 && hit.v === 20) {
+ soundFile = localStorage.getItem('mkk_sound_t20') || 'Trippel20-lauter.wav';
+ } else if (hit.m === 3 && hit.v === 19) {
+ soundFile = localStorage.getItem('mkk_sound_t19') || 'Trippel19-lauter.wav';
+ } else if (hit.m === 3 && hit.v === 18) {
+ soundFile = localStorage.getItem('mkk_sound_t18') || 'Trippel18-lauter.wav';
+ } else if (hit.m === 3 && hit.v === 17) {
+ soundFile = localStorage.getItem('mkk_sound_t17') || 'Trippel17-lauter.wav';
+ } 
+ else if (hit.v === 0) {
+ soundFile = localStorage.getItem('mkk_sound_miss') || 'Vorbei.wav';
+ } else if (hit.v === 25 && hit.m === 1) {
+ soundFile = localStorage.getItem('mkk_sound_sbull') || 'Bull.wav';
+ } else if (hit.v === 25 && hit.m === 2) {
+ soundFile = localStorage.getItem('mkk_sound_dbull') || 'Bull-lauter.wav';
+ } else if (hit.m === 3) {
+ soundFile = localStorage.getItem('mkk_sound_triple') || 'Trippel-pip.wav';
+ } else if (hit.m === 2) {
+ soundFile = localStorage.getItem('mkk_sound_double') || 'Doppel-lauter.wav';
+ } else {
+ soundFile = localStorage.getItem('mkk_sound_single') || 'Einfach-pip.wav';
+ }
+
+ if (soundFile !== "") {
+ const audio = new Audio(soundFile);
+ audio.play().catch(e => console.log("Audio blockiert:", e));
+ }
+
+ // Deutsche Sprachausgabe
+ if (!isX01Bust && p.score !== 0) {
+ let speechText = "";
+ if (hit.v === 0) speechText = "Fehlwurf";
+ else if (hit.v === 25) speechText = hit.m === 2 ? "Doppel Bull" : "Bullseye";
+ else {
+ let prefixText = hit.m === 3 ? "Dreifach " : (hit.m === 2 ? "Doppel " : "");
+ speechText = `${prefixText}${hit.v}`;
+ }
+ const utterance = new SpeechSynthesisUtterance(speechText);
+ utterance.lang = 'de-DE';
+ utterance.rate = 1.25; 
+ window.speechSynthesis.speak(utterance);
+ }
+ } catch(audioErr) {
+ console.error("Audio-Fehler in Spiellogik:", audioErr);
+ }
+ }
+
+ // Punkte vor dem ersten Wurf merken (für potenziellen Bust)
+ if (dartsThrownThisTurn === 1) {
+ p.scoreAtStartOfTurn = (currentSessionMode === 'x01' || currentSessionMode === 'x01_teams') ? (p.score + points) : p.score;
+ }
+ 
+ logHistory(`${p.name}: ${hit.t} ${hit.v} (${points} Pkt)`);
+ 
+ // Display aktualisieren
+ updateHud();
+
+ // --- RUNDENENDE PRÜFEN ---
+ if (dartsThrownThisTurn >= 3) { 
+ if (currentSessionMode === 'split') {
+ const mindestPfeile = parseInt(document.getElementById('split-start')?.value) || 12;
+ if (!p.roundHitsThisTurn || p.roundHitsThisTurn === 0) {
+ if (p.totalDarts > mindestPfeile) {
+ const altePunktzahl = p.score;
+ p.score = Math.round(p.score / 2);
+ 
+ const exploContainer = document.createElement('div');
+ exploContainer.className = 'split-explosion-overlay';
+ exploContainer.innerHTML = `<div class="explosion-number">${altePunktzahl}<br><span style="font-size:4vw; color:#fff;"> ZERPLATZT AUF ${p.score} </span></div>`;
+ document.body.appendChild(exploContainer);
+ 
+ setTimeout(() => { exploContainer.remove(); }, 2000);
+ logHistory(` Keine Treffer! ${p.name} fällt auf ${p.score}`);
+ } else {
+ logHistory(` Keine Treffer, aber geschützt vor Pfeil ${mindestPfeile}`);
+ }
+ }
+ p.roundHitsThisTurn = 0;
+ }
+ 
+ triggerTurnChange(); 
+ }
+}
+
+
+
+
+
 
 
 function triggerTurnChange() {
