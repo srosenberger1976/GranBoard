@@ -52,29 +52,45 @@ body {
     z-index: 1;
 }
 
-/* --- AUTOMATISCHE, RESPONSIVE SIDEBAR FÜR HANDY & TABLET --- */
 .sidebar {
- position: fixed;
- top: 0;
- left: 0;
- width: 380px; /* Standardbreite für große PC-Monitore */
- height: 100vh;
- background: rgba(10, 14, 28, 0.96);
- border-right: 2px solid var(--accent-cyan);
- padding: 20px;
- display: flex;
- flex-direction: column;
- gap: 12px;
- overflow-y: auto;
- backdrop-filter: blur(15px);
- box-shadow: 10px 0 30px rgba(0,0,0,0.7);
- transition: all 0.4s ease-in-out;
- z-index: 200;
+  position: fixed;
+  top: 0;
+  left: -500px; /* KORREKTUR: Startet komplett unsichtbar außerhalb des linken Rands */
+  width: 500px;
+  height: 100vh;
+  background: rgba(10, 13, 26, 0.96);
+  backdrop-filter: blur(10px);
+  border-right: 2px solid var(--accent-cyan);
+  padding: 20px 25px 15px 25px;
+  box-sizing: border-box;
+  z-index: 1000;
+  transition: left 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  box-shadow: 5px 0 25px rgba(0, 240, 255, 0.2);
 }
 
-.sidebar.open {
- left: 0;
+
+/* Der neue pulsierende Neon-Blinkeffekt für deinen Namen */
+@keyframes neonPulse {
+  0% { text-shadow: 0 0 4px rgba(0,240,255,0.6), 0 0 10px rgba(0,240,255,0.4); opacity: 1; }
+  50% { text-shadow: 0 0 15px var(--accent-cyan), 0 0 30px var(--accent-cyan); opacity: 0.85; }
+  100% { text-shadow: 0 0 4px rgba(0,240,255,0.6), 0 0 10px rgba(0,240,255,0.4); opacity: 1; }
 }
+
+.blink-neon {
+  animation: neonPulse 2s infinite ease-in-out;
+  color: var(--accent-cyan);
+  font-weight: 900;
+}
+
+
+/* WICHTIG: Falls es eine .sidebar.open Klasse gibt, stelle sicher, dass sie so aussieht: */
+.sidebar.open {
+  left: 0px !important;
+}
+
 
 /* 📱 AUTOMATISCHE ANPASSUNG FÜR SMARTPHONES (Querformat / Landscape) */
 @media screen and (max-width: 896px) and (orientation: landscape) {
@@ -570,108 +586,145 @@ body {
 
 
 
+
+
+
+
+
+
  <!-- DIE SIDEBAR -->
- <!-- DIE SIDEBAR -->
- <div class="sidebar open" id="sliding-settings-menu">
-
- <!-- Schließen-Knopf im Untermenü -->
- <button style="background:#ff3333; margin-bottom: 5px; color:#fff;" onclick="toggleSettingsMenu()">
- <i class="fa-solid fa-xmark"></i> Einstellungen schließen
- </button>
- 
- <!-- DIE SIDEBAR INHALTE -->
- <h1><i class="fa-solid fa-crosshairs"></i> GranBoard 3D</h1>
- 
- <!-- 1. BOARD VERBINDEN -->
- <button id="btnConnect" class="btn-primary">
-   <strong>1.</strong> <i class="fa-solid fa-bluetooth"></i> Board Verbinden
- </button>
-
- <!-- 2. SPIELER AUSWÄHLEN (Hierher verschoben!) -->
- <div class="section-box" style="margin-bottom: 15px;">
-   <div class="section-title"><i class="fa-solid fa-users"></i> Trainingsteilnehmer</div>
-   <button type="button" onclick="openPlayerModal()" style="width: 100%; background: linear-gradient(135deg, #111424 0%, #1b223c 100%); border: 1px solid var(--accent-cyan); color: var(--accent-cyan); font-weight: bold; padding: 12px; cursor: pointer; box-shadow: 0 0 10px rgba(0,240,255,0.1); margin-bottom: 0; font-family: 'Orbitron'; font-size: 13px;">
-     <strong>2.</strong> <i class="fa-solid fa-user-gear"></i> SPIELER AUSWÄHLEN 👥
-   </button>
- </div>
-
- <!-- UPGRADED SETUP PANEL -->
- <div class="section-box" id="setup-panel">
-   <div class="section-title"><i class="fa-solid fa-sliders"></i> Training-Setup</div>
-   <label>Spielmodus</label>
-   <select id="game-mode" onchange="toggleGameModeOptions()">
-     <option value="x01">301 - 1001 (Einzelspieler)</option>
-     <option value="x01_teams">301 - 1001 (Team-Modus)</option>
-     <option value="cricket">Klassik Cricket (15 - Bull)</option>
-     <option value="maxicricket">Maxi Cricket (10 - Bull)</option>
-     <option value="split">Split Score</option>
-   </select>
-
-   <!-- X01 OPTIONEN -->
-   <div id="x01-options">
-     <label>Punkte-Ziel</label>
-     <select id="x01-target">
-       <option value="301">301</option>
-       <option value="501" selected>501</option>
-       <option value="701">701</option>
-       <option value="1001">1001</option>
-     </select>
-     <label>Einwurf (In)</label>
-     <select id="x01-in">
-       <option value="open">Open In</option>
-       <option value="double">Double In</option>
-       <option value="master">Master In</option>
-     </select>
-     <label>Auswurf (Out)</label>
-     <select id="x01-out">
-       <option value="open">Open Out</option>
-       <option value="double" selected>Double Out</option>
-       <option value="master">Master Out</option>
-     </select>
+ <div class="sidebar open" id="sliding-settings-menu" style="left: 0px; padding: 20px 25px 15px 25px;">
+   
+   <!-- TOP-BAR: Maximale Breite, kein Quetschen mehr -->
+   <!-- TOP-BAR: Automatischer Suchmodus integriert -->
+   <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 15px; gap: 15px; width: 100%;">
+     
+     <!-- Menü schließen -->
+     <button onclick="toggleSettingsMenu()" style="background: transparent; border: 2px solid var(--accent-cyan); color: var(--accent-cyan); font-size: 15px; padding: 7px 14px; border-radius: 6px; cursor: pointer; transition: all 0.3s; font-family: 'Orbitron', sans-serif; font-weight: 900; white-space: nowrap;">
+       ◀ MENÜ
+     </button>
+     
+     <!-- Rosis Titel -->
+     <div style="text-align: center; flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Orbitron', sans-serif; line-height: 1.1;">
+       <span class="blink-neon" style="font-size: 22px; letter-spacing: 1.5px;">GRANBOARD</span>
+       <span style="font-size: 13px; color: var(--accent-gold); font-weight: bold; letter-spacing: 3px; margin-top: 2px; text-transform: uppercase;">by Rosi</span>
+     </div>
+     
+     <!-- Board-Status-Button (Startet im gelben Suchmodus) -->
+     <button id="btnConnect" style="background: rgba(255, 170, 0, 0.2); border: 2px solid #ffaa00; color: #ffaa00; font-size: 13px; padding: 7px 14px; border-radius: 6px; cursor: pointer; transition: all 0.3s; font-family: 'Orbitron', sans-serif; font-weight: 900; white-space: nowrap;"
+             title="Board-Status">
+       SUCHE BOARD...
+     </button>
    </div>
 
-   <!-- SPLIT SCORE OPTIONEN -->
-   <div id="split-options" style="display: none;">
-     <label>Pfeilwechsel-Kürzung</label>
-     <select id="split-start">
-       <option value="12">Ab Pfeil 12</option>
-       <option value="15">Ab Pfeil 15</option>
+
+
+   <!-- 1. TRAINING-SETUP (Größere Beschriftungen & Boxen) -->
+   <div class="section-box" id="setup-panel" style="margin-bottom: 18px; padding: 15px 18px;">
+     <div class="section-title" style="font-size: 16px; margin-bottom: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;"><i class="fa-solid fa-sliders"></i> Training-Setup</div>
+     
+     <label style="font-size: 14px; margin-bottom: 6px; font-weight: bold; color: #aaa;">Spielmodus</label>
+     <select id="game-mode" onchange="toggleGameModeOptions()" style="padding: 10px; font-size: 16px; margin-bottom: 14px; font-family: 'Orbitron', sans-serif; font-weight: bold;">
+       <option value="x01">301 - 1001 (Einzelspieler)</option>
+       <option value="x01_teams">301 - 1001 (Team-Modus)</option>
+       <option value="cricket">Klassik Cricket (15 - Bull)</option>
+       <option value="maxicricket">Maxi Cricket (10 - Bull)</option>
+       <option value="split">Split Score</option>
      </select>
+     
+     <!-- X01 OPTIONEN -->
+     <div id="x01-options">
+       <label style="font-size: 14px; margin-bottom: 6px; font-weight: bold; color: #aaa;">Punkte-Ziel</label>
+       <select id="x01-target" style="padding: 10px; font-size: 16px; margin-bottom: 14px; font-family: 'Orbitron', sans-serif;">
+         <option value="301">301</option>
+         <option value="501" selected>501</option>
+         <option value="701">701</option>
+         <option value="1001">1001</option>
+       </select>
+       <label style="font-size: 14px; margin-bottom: 6px; font-weight: bold; color: #aaa;">Einwurf (In)</label>
+       <select id="x01-in" style="padding: 10px; font-size: 16px; margin-bottom: 14px; font-family: 'Orbitron', sans-serif;">
+         <option value="open">Open In</option>
+         <option value="double">Double In</option>
+         <option value="master">Master In</option>
+       </select>
+       <label style="font-size: 14px; margin-bottom: 6px; font-weight: bold; color: #aaa;">Auswurf (Out)</label>
+       <select id="x01-out" style="padding: 10px; font-size: 16px; margin-bottom: 6px; font-family: 'Orbitron', sans-serif;">
+         <option value="open">Open Out</option>
+         <option value="double" selected>Double Out</option>
+         <option value="master">Master Out</option>
+       </select>
+     </div>
+     
+     <!-- SPLIT SCORE OPTIONEN -->
+     <div id="split-options" style="display: none;">
+       <label style="font-size: 14px; margin-bottom: 6px; font-weight: bold; color: #aaa;">Pfeilwechsel-Kürzung</label>
+       <select id="split-start" style="padding: 10px; font-size: 16px; margin-bottom: 6px; font-family: 'Orbitron', sans-serif;">
+         <option value="12">Ab Pfeil 12</option>
+         <option value="15">Ab Pfeil 15</option>
+       </select>
+     </div>
+   </div> 
+
+   <!-- 2. SPIELER AUSWÄHLEN -->
+   <div class="section-box" style="margin-bottom: 18px; padding: 15px 18px;">
+     <div class="section-title" style="font-size: 16px; margin-bottom: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;"><i class="fa-solid fa-users"></i> Trainingsteilnehmer</div>
+     <button type="button" onclick="openPlayerModal()" style="width: 100%; background: linear-gradient(135deg, #111424 0%, #1b223c 100%); border: 2px solid var(--accent-cyan); color: var(--accent-cyan); font-weight: bold; padding: 14px; cursor: pointer; box-shadow: 0 0 12px rgba(0,240,255,0.15); margin-bottom: 0; font-family: 'Orbitron'; font-size: 15px; letter-spacing: 1px;">
+       <i class="fa-solid fa-user-gear"></i> SPIELER AUSWÄHLEN 👥
+     </button>
    </div>
- </div> 
 
- <!-- 3. TRAINING STARTEN -->
- <div class="section-box">
-   <!-- START-BUTTON: Ändert dynamisch Text und Farbe via JavaScript -->
-   <button id="btnStartGame" onclick="initTrainingSession()" disabled style="background: linear-gradient(135deg, #990000 0%, #ff3333 100%); color: #fff; font-weight: bold; cursor: not-allowed; opacity: 0.9; margin-bottom: 0;">
-     <strong>3.</strong> Spieler wählen
-   </button>
+   <!-- 3. TRAINING STARTEN -->
+   <div class="section-box" style="margin-bottom: 25px; padding: 12px 18px;">
+     <button id="btnStartGame" onclick="initTrainingSession()" disabled style="background: linear-gradient(135deg, #990000 0%, #ff3333 100%); color: #fff; font-weight: bold; padding: 16px; cursor: not-allowed; opacity: 0.9; margin-bottom: 0; width: 100%; font-family: 'Orbitron'; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; border-radius: 6px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
+       Spieler wählen
+     </button>
+   </div>
+
+   <!-- WURFHISTORIE (Nach unten geschoben, scrollt bei Bedarf ein) -->
+   <div class="section-box" style="padding: 12px 18px; margin-top: auto;">
+     <div class="section-title" style="font-size: 14px; margin-bottom: 8px; color: #666;"><i class="fa-solid fa-clock-rotate-left"></i> Wurfhistorie</div>
+     <div id="history-log" style="font-family:monospace; font-size:12px; overflow-y:auto; background:#07090f; padding:8px; border-radius:4px; max-height: 90px; color: #555;">
+       Warte auf Trainingsstart...
+     </div>
+   </div>
  </div>
 
 
- 
- <!-- WURF-LIVE-LOG -->
- <div class="section-box" style="flex-grow:1; display:flex; flex-direction:column;">
- <div class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Wurfhistorie</div>
- <div id="history-log" style="font-family:monospace; font-size:12px; overflow-y:auto; flex-grow:1; background:#07090f; padding:8px; border-radius:4px; max-height: 200px;">
- Warte auf Trainingsstart...
+ <!-- MITTIGER ANLEITUNGS-KASTEN (ERSETZT DEN ZEITSTEMPEL) -->
+ <div id="app-version-date" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Orbitron', sans-serif; background: rgba(5, 7, 15, 0.96); padding: 25px 35px; border: 2px solid var(--accent-cyan); border-radius: 12px; z-index: 10; pointer-events: none; box-shadow: 0 0 35px rgba(0, 240, 255, 0.25); width: 100%; max-width: 480px; box-sizing: border-box;">
+   
+   <h2 style="color: var(--accent-cyan); text-shadow: 0 0 15px rgba(0, 240, 255, 0.6); font-size: 20px; margin-bottom: 15px; text-align: center; letter-spacing: 2px; font-weight: 900;">
+     SCHNELLSTART-ANLEITUNG
+   </h2>
+   
+   <div style="text-align: left; font-size: 14px; color: #e0f4f8; display: flex; flex-direction: column; gap: 12px; line-height: 1.4; font-family: sans-serif;">
+     
+     <div style="display: flex; gap: 10px; align-items: flex-start;">
+       <span style="color: var(--accent-gold); font-weight: bold; font-family: 'Orbitron'; font-size: 15px;">1.</span>
+       <span><strong>Board verbinden:</strong> Tippe irgendwo auf den Bildschirm, um die Bluetooth-Suche zu starten, oder nutze den Button oben rechts.</span>
+     </div>
+     
+     <div style="display: flex; gap: 10px; align-items: flex-start;">
+       <span style="color: var(--accent-gold); font-weight: bold; font-family: 'Orbitron'; font-size: 15px;">2.</span>
+       <span><strong>Spielmodus wählen:</strong> Stelle im Menü links deinen gewünschten Modus (Einzelspieler oder Team-Modus) ein.</span>
+     </div>
+     
+     <div style="display: flex; gap: 10px; align-items: flex-start;">
+       <span style="color: var(--accent-gold); font-weight: bold; font-family: 'Orbitron'; font-size: 15px;">3.</span>
+       <span><strong>Spieler & Teams antippen:</strong> Öffne das Pop-up. Klicke mehrfach auf eine Spielerkarte, um sie zu aktivieren oder einem Team (1-5) zuzuordnen.</span>
+     </div>
+     
+     <div style="display: flex; gap: 10px; align-items: flex-start;">
+       <span style="color: var(--accent-gold); font-weight: bold; font-family: 'Orbitron'; font-size: 15px;">4.</span>
+       <span><strong>Namen ändern:</strong> Halte eine Spielerkarte auf dem Tablet <strong>lange gedrückt</strong> (oder Rechtsklick am PC), um den Namen zu überschreiben.</span>
+     </div>
+     
+     <div style="display: flex; gap: 10px; align-items: flex-start; margin-top: 5px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+       <span style="color: #aaa; font-size: 13px;">Sobald das Board bereit und mindestens ein Spieler aktiv ist, schaltet der rote Start-Button unten links grün frei.</span>
+     </div>
+     
+   </div>
  </div>
- </div>
- </div>
-
- <!-- 3D AREA AND HUD OVERLAYS (BEREINIGT) -->
- <div id="canvas3d-container">
- <div id="action-banner">PFEILE RAUSZIEHEN!</div>
- <!-- MITTIGER ÄNDERUNGS-ZEITSTEMPEL MIT UHRZEIT -->
- <div id="app-version-date" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: bold; color: var(--accent-cyan); text-shadow: 0 0 15px rgba(0, 240, 255, 0.6); background: rgba(5, 7, 15, 0.85); padding: 15px 30px; border: 2px dashed var(--accent-cyan); border-radius: 10px; z-index: 10; pointer-events: none; letter-spacing: 2px; text-align: center; box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);">
-   <i class="fa-solid fa-code-branch" style="margin-right: 10px;"></i> GranBoard 3D Pro<br>
-   <span style="font-size: 14px; color: #aaa; font-weight: normal; display: block; margin-top: 5px;">Letztes Update: 07.11.2026 - 20:35 Uhr</span>
- </div>
-
-
-
-
-
 
  <div class="hud-overlay">
  <div class="hud-top" style="display: flex; flex-direction: column; width: 100%; align-items: center; gap: 15px;">
@@ -687,6 +740,7 @@ body {
  <i class="fa-solid fa-location-arrow dart-icon" id="dart-3"></i>
  </div>
  </div>
+
 
  <!-- DAS MULTI-DISPLAY FÜR UNTEREINANDER (CRICKET & SPLIT SCORE) -->
  <div id="cricket-matrix-hud" style="display:none; width: 100%; background: transparent;">
@@ -881,77 +935,232 @@ function closePlayerModal() {
 
 
 
-
 function renderMembersListSidebar() {
-  const listContainer = document.getElementById('members-list');
-  if (!listContainer) return; 
-  
-  listContainer.innerHTML = ''; // Leeren vor dem Neuzeichnen
-  
-  membersData.forEach((m, idx) => {
-    // Generiert Text-Labels für geholte Siege
-    let statsText = "";
-    if (m.x01 > 0) statsText += ` X01: ${m.x01}`;
-    if (m.cricket > 0) statsText += ` Cri: ${m.cricket}`;
-    if (m.maxicricket > 0) statsText += ` Max: ${m.maxicricket}`;
-    if (m.split > 0) statsText += ` Spl: ${m.split}`;
-    if (statsText !== "") statsText = `<span style="color:var(--accent-gold); font-size:12px; font-weight:bold; margin-top:4px; display:block;">[ ${statsText} ]</span>`;
-    
-    // Standardmäßig die ersten beiden Spieler beim allerersten Start anhaken
-    let wasChecked = idx < 2; 
-    
-    listContainer.innerHTML += `
-    <div class="member-button-card" id="card-wrapper-${idx}" style="display:block; margin:0;">
-      <!-- Die echte Checkbox bleibt im Hintergrund -->
-      <input type="checkbox" class="member-checkbox" id="mem-${idx}" value="${idx}" ${wasChecked ? 'checked' : ''} style="display:none;">
-      
-      <!-- Der klickbare Button-Kasten -->
-      <div class="member-entry" id="visual-box-${idx}" onclick="togglePlayerSelectionState(${idx})" style="display:flex; flex-direction:column; background:${wasChecked ? 'rgba(57, 255, 20, 0.15)' : 'rgba(255,255,255,0.02)'}; border:${wasChecked ? '2px solid var(--accent-green)' : '1px solid rgba(255,255,255,0.1)'}; ${wasChecked ? 'box-shadow: 0 0 15px rgba(57,255,20,0.4);' : ''} padding:15px; border-radius:8px; font-family:'Orbitron', sans-serif; transition:all 0.15s ease-in-out; user-select:none; cursor:pointer;">
-        
-        <div style="display:flex; align-items:center; width:100%; gap:10px;">
-          <span id="status-dot-${idx}" style="font-size:18px; color: ${wasChecked ? 'var(--accent-green)' : '#444'};">${wasChecked ? '✓' : '●'}</span>
-          
-          <input type="text" value="${m.name}" id="name-${idx}" onchange="membersData[${idx}].name=this.value" onclick="event.stopPropagation();" style="margin:0; padding:6px; flex-grow:1; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:4px; font-family:inherit; font-size:16px; font-weight:700; ${wasChecked ? 'text-shadow: 0 0 10px rgba(57,255,20,0.6);' : ''}">
-          
-          <!-- Das Team-Dropdown direkt auf der Spielerkarte -->
-          <select id="team-select-${idx}" onclick="event.stopPropagation();" style="width: auto; margin: 0; padding: 4px 8px; background: #0f111a; border: 1px solid var(--accent-cyan); color: #fff; font-size: 13px; font-weight: bold; border-radius: 4px;">
-            <option value="1" ${idx % 2 === 0 ? 'selected' : ''}>Team 1</option>
-            <option value="2" ${idx % 2 !== 0 ? 'selected' : ''}>Team 2</option>
-            <option value="3">Team 3</option>
-            <option value="4">Team 4</option>
-          </select>
-        </div>
-        ${statsText}
-      </div>
-    </div>`;
-  });
+ const listContainer = document.getElementById('members-list');
+ if (!listContainer) return; 
+ 
+ listContainer.innerHTML = ''; // Leeren vor dem Neuzeichnen
+ 
+ membersData.forEach((m, idx) => {
+ // Generiert Text-Labels für geholte Siege
+ let statsText = "";
+ if (m.x01 > 0) statsText += ` X01: ${m.x01}`;
+ if (m.cricket > 0) statsText += ` Cri: ${m.cricket}`;
+ if (m.maxicricket > 0) statsText += ` Max: ${m.maxicricket}`;
+ if (m.split > 0) statsText += ` Spl: ${m.split}`;
+ if (statsText !== "") statsText = `<span style="color:var(--accent-gold); 
+font-size:12px; font-weight:bold; margin-top:4px; display:block;">[ ${statsText}
+]</span>`;
+ 
+ // Standardmäßig die ersten beiden Spieler beim allerersten Start anhaken (Team 1 und Team 2 initialisieren)
+ let wasChecked = idx < 2; 
+ let initialTeam = (idx % 2 === 0) ? 1 : 2;
 
-  // --- HIER FOLGT DEIN UNTERER TEIL (DIE PRÜFUNG) ALS FEST INTEGRIERTER ABSCHLUSS ---
-  const startBtn = document.getElementById('btnStartGame');
-  if (startBtn) {
-      // Wir zählen, wie viele Checkboxen einen Haken haben
-      const ausgewaehlteSpieler = document.querySelectorAll('.member-checkbox:checked').length;
-      
-      if (ausgewaehlteSpieler > 0) {
-          // Mindestens 1 Spieler gewählt -> GRÜN & FREIGEGEBEN
-          startBtn.disabled = false;
-          startBtn.innerText = "Training Starten";
-          startBtn.style.background = "linear-gradient(135deg, #009900 0%, #39ff14 100%)";
-          startBtn.style.color = "#000";
-          startBtn.style.cursor = "pointer";
-          startBtn.style.opacity = "1";
-      } else {
-          // Kein Spieler ausgewählt -> ROT & GESPERRT
-          startBtn.disabled = true;
-          startBtn.innerText = "Spieler wählen";
-          startBtn.style.background = "linear-gradient(135deg, #990000 0%, #ff3333 100%)";
-          startBtn.style.color = "#fff";
-          startBtn.style.cursor = "not-allowed";
-          startBtn.style.opacity = "0.9";
-      }
-  }
-} // <--- Das schließt die gesamte renderMembersListSidebar ab!
- // <--- Das ist die bereits existierende, schließende Klammer der Funktion renderMembersListSidebar!
+ listContainer.innerHTML += `
+ <div class="member-button-card" id="card-wrapper-${idx}" style="display:block; margin:0;">
+ <!-- KORREKTUR: Elemente liegen flach nebeneinander, damit initTrainingSession sie fehlerfrei findet -->
+ <input type="checkbox" class="member-checkbox" id="mem-${idx}" value="${idx}" ${wasChecked ? 'checked' : ''} style="display:none;">
+ <select id="team-select-${idx}" style="display:none;">
+ <option value="1" ${initialTeam === 1 ? 'selected' : ''}>1</option>
+ <option value="2" ${initialTeam === 2 ? 'selected' : ''}>2</option>
+ <option value="3">3</option>
+ <option value="4">4</option>
+ <option value="5">5</option>
+ </select>
+ 
+ <!-- Die stylische Button-Karte -->
+ <div class="member-entry new-cyber-btn" id="visual-box-${idx}" 
+      onclick="handlePlayerCardClick(${idx})"
+      style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:15px; border-radius:8px; font-family:'Orbitron', sans-serif; transition:all 0.2s ease-in-out; user-select:none; cursor:pointer; min-height:80px; text-align:center;">
+ 
+ <div style="width:100%; font-size:16px; font-weight:700;" id="name-display-${idx}">
+ ${m.name}
+ </div>
+ <div id="team-badge-${idx}" style="font-size:11px; margin-top:5px; font-weight:900; letter-spacing:1px; text-transform:uppercase;">
+ INAKTIV
+ </div>
+ ${statsText}
+ </div>
+ </div>`;
+ 
+ // Direkt den visuellen Startzustand herstellen
+ setTimeout(() => { updateCardVisuals(idx); }, 10);
+ });
+
+ // Erzwingt die korrekte Button-Aktivierung nach dem Rendern
+ setTimeout(() => { checkStartButtonLive(); }, 50);
+}
+
+
+
+
+
+
+// Zentrale Klick-Logik: Erkennt automatisch, ob Einzel- oder Teammodus aktiv ist
+function handlePlayerCardClick(idx) {
+ const checkbox = document.getElementById(`mem-${idx}`);
+ const teamSelect = document.getElementById(`team-select-${idx}`);
+ if (!checkbox || !teamSelect) return;
+
+ // Spielmodus aus dem Hauptmenü auslesen
+ const gameMode = document.getElementById('game-mode')?.value || 'x01';
+ const isTeamMode = (gameMode === 'x01_teams');
+
+ let isChecked = checkbox.checked;
+ let currentTeam = parseInt(teamSelect.value);
+
+ if (!isTeamMode) {
+   // --- EINZELSPIELER-LOGIK ---
+   // Wechselt einfach nur zwischen Aktiv (immer Team 1 im Hintergrund) und Inaktiv
+   checkbox.checked = !isChecked;
+   teamSelect.value = "1"; 
+ } else {
+   // --- TEAM-LOGIK ---
+   // Rotiert wie gewohnt durch Teams (1 bis 5), danach wieder Inaktiv
+   if (!isChecked) {
+     checkbox.checked = true;
+     teamSelect.value = "1";
+   } else {
+     if (currentTeam < 5) {
+       teamSelect.value = (currentTeam + 1).toString();
+     } else {
+       checkbox.checked = false;
+       teamSelect.value = "1";
+     }
+   }
+ }
+
+ // Optik sofort anpassen und Start-Button prüfen
+ updateCardVisuals(idx);
+ checkStartButtonLive();
+}
+
+// Hilfsfunktion zur Zuweisung der Farben (berücksichtigt Einzel- vs. Teammodus)
+function updateCardVisuals(idx) {
+ const checkbox = document.getElementById(`mem-${idx}`);
+ const teamSelect = document.getElementById(`team-select-${idx}`);
+ const visualBox = document.getElementById(`visual-box-${idx}`);
+ const badge = document.getElementById(`team-badge-${idx}`);
+ const nameDisplay = document.getElementById(`name-display-${idx}`);
+
+ if (!checkbox || !teamSelect || !visualBox || !badge || !nameDisplay) return;
+
+ // Spielmodus auslesen
+ const gameMode = document.getElementById('game-mode')?.value || 'x01';
+ const isTeamMode = (gameMode === 'x01_teams');
+
+ if (!checkbox.checked) {
+   // Inaktiver Zustand (Dunkel, dezenter Rahmen)
+   visualBox.style.background = "rgba(255,255,255,0.02)";
+   visualBox.style.border = "1px solid rgba(255,255,255,0.1)";
+   visualBox.style.boxShadow = "none";
+   nameDisplay.style.color = "#888";
+   nameDisplay.style.textShadow = "none";
+   badge.innerText = "STANDBY";
+   badge.style.color = "#555";
+ } else {
+   // Aktiver Zustand
+   nameDisplay.style.color = "#ffffff";
+   nameDisplay.style.textShadow = "0 0 8px rgba(255,255,255,0.5)";
+   
+   if (!isTeamMode) {
+     // --- OPTIK FÜR EINZELSPIELER ---
+     let activeColor = "#00f0ff"; // Klares Cyberpunk-Cyan
+     visualBox.style.background = "rgba(0, 240, 255, 0.15)";
+     visualBox.style.border = `2px solid ${activeColor}`;
+     visualBox.style.boxShadow = `0 0 15px ${activeColor}44`;
+     badge.innerText = "SPIELER AKTIV";
+     badge.style.color = activeColor;
+   } else {
+     // --- OPTIK FÜR TEAMS 1-5 ---
+     let currentTeam = teamSelect.value;
+     let teamColor = "#00f0ff";
+     let bgColor = "rgba(0, 240, 255, 0.12)";
+     
+     switch(currentTeam) {
+       case "1":
+         teamColor = "#00f0ff"; // Neon Cyan
+         bgColor = "rgba(0, 240, 255, 0.12)";
+         break;
+       case "2":
+         teamColor = "#39ff14"; // Neon Grün
+         bgColor = "rgba(57, 255, 20, 0.12)";
+         break;
+       case "3":
+         teamColor = "#ffaa00"; // Neon Gold
+         bgColor = "rgba(255, 170, 0, 0.12)";
+         break;
+       case "4":
+         teamColor = "#ff0055"; // Neon Pink/Rot
+         bgColor = "rgba(255, 0, 85, 0.12)";
+         break;
+       case "5":
+         teamColor = "#b026ff"; // Neon Violett
+         bgColor = "rgba(176, 38, 255, 0.12)";
+         break;
+     }
+     
+     visualBox.style.background = bgColor;
+     visualBox.style.border = `2px solid ${teamColor}`;
+     visualBox.style.boxShadow = `0 0 15px ${teamColor}44`;
+     badge.innerText = `TEAM ${currentTeam}`;
+     badge.style.color = teamColor;
+   }
+ }
+}
+
+
+// --- DYNAMISCHES UMBENENNEN FÜR PC (RECHTSKLICK) & MOBIL (LANGER FINGERDRUCK) ---
+let touchTimer = null;
+
+window.addEventListener('touchstart', function(e) {
+ const card = e.target.closest('.member-entry');
+ if (card) {
+   const idMatch = card.id.match(/\d+/);
+   if (idMatch) {
+     const idx = parseInt(idMatch[0]);
+     if (touchTimer) clearTimeout(touchTimer);
+     touchTimer = setTimeout(() => {
+       triggerNameChange(idx);
+     }, 800);
+   }
+ }
+}, { passive: true });
+
+window.addEventListener('touchend', function() {
+ if (touchTimer) clearTimeout(touchTimer);
+});
+window.addEventListener('touchmove', function() {
+ if (touchTimer) clearTimeout(touchTimer);
+});
+
+window.addEventListener('contextmenu', function(e) {
+ const card = e.target.closest('.member-entry');
+ if (card) {
+   e.preventDefault(); 
+   const idMatch = card.id.match(/\d+/);
+   if (idMatch) {
+     triggerNameChange(parseInt(idMatch[0]));
+   }
+ }
+});
+
+function triggerNameChange(idx) {
+ if (touchTimer) clearTimeout(touchTimer);
+ let currentName = membersData[idx].name;
+ let newName = prompt(`Spielernamen bearbeiten:`, currentName);
+ if (newName !== null && newName.trim() !== "") {
+   membersData[idx].name = newName.trim();
+   const nameDisp = document.getElementById(`name-display-${idx}`);
+   if (nameDisp) nameDisp.innerText = newName.trim();
+   logHistory(`Spieler umbenannt in: ${newName.trim()}`);
+ }
+}
+
+// Veraltete Einzelfunktion abfangen, falls sie woanders aufgerufen wird
+function togglePlayerSelectionState(idx) {
+ handlePlayerCardClick(idx);
+}
 
 
  // NEU: Diese separate Hilfsfunktion färbt den Button live um, ohne den Code zum Absturz zu bringen!
@@ -1020,32 +1229,29 @@ function checkStartButtonLive() {
 
 
 
-
-
 function toggleGameModeOptions() {
  const mode = document.getElementById('game-mode').value;
- // Erlaubt die Optionen-Anzeige für 'x01' UND 'x01_teams'
  document.getElementById('x01-options').style.display = (mode === 'x01' || mode === 'x01_teams') ? 'block' : 'none';
  document.getElementById('split-options').style.display = mode === 'split' ? 'block' : 'none';
+ 
+ // KORREKTUR: Aktualisiert sofort alle Spielerkarten-Visuals live beim Modus-Wechsel!
+ for(let i = 0; i < membersData.length; i++) { if(document.getElementById(`mem-${i}`)) updateCardVisuals(i); }
 }
 
 
 
 
 function toggleSettingsMenu() {
-    const menu = document.getElementById('sliding-settings-menu');
-    if (!menu) return;
-
-    // Wir prüfen den echten, aktuellen Pixel-Wert im Browser
-    if (menu.style.left === '0px' || menu.style.left === '0') {
-        // Wenn es offen ist -> schieben wir es raus (schließen)
-        menu.style.left = '-400px';
-        menu.classList.remove('open');
-    } else {
-        // Wenn es versteckt ist -> holen wir es rein (öffnen)
-        menu.style.left = '0px';
-        menu.classList.add('open');
-    }
+  const menu = document.getElementById('sliding-settings-menu');
+  if (!menu) return;
+  
+  if (menu.classList.contains('open')) {
+    menu.style.left = '-500px'; /* KORREKTUR: Schiebt die breite Sidebar ganz aus dem Bild */
+    menu.classList.remove('open');
+  } else {
+    menu.style.left = '0px';    /* Öffnet die Sidebar bündig am linken Rand */
+    menu.classList.add('open');
+  }
 }
 
 
@@ -1054,70 +1260,62 @@ function toggleSettingsMenu() {
 
 
 
-// ERWEITERTES TRAINING-SETUP MIT DOPPEL-FUNKTION (KORRIGIERT)
+
+
 function initTrainingSession() {
  activePlayers = [];
  currentSessionMode = document.getElementById('game-mode').value;
+ for(let i = 0; i < membersData.length; i++) {
+ const cb = document.getElementById(`mem-${i}`);
  
-  for(let i = 0; i < membersData.length; i++) {
-    const cb = document.getElementById(`mem-${i}`);
-    const nameInput = document.getElementById(`name-${i}`);
-    
-    // NEU: Holt das vom Nutzer frei gewählte Team aus dem Dropdown
-    const teamDropdown = document.getElementById(`team-select-${i}`);
-    let zugewiesenesTeam = teamDropdown ? parseInt(teamDropdown.value) : 1;
-    
-    if(cb && cb.checked) {
-      let pName = nameInput.value.trim() || `Spieler ${i+1}`;
-      let startScore = 501;
-      
-      // Greift auch bei der neuen Team-ID 'x01_teams'
-      if(currentSessionMode === 'x01' || currentSessionMode === 'x01_teams') {
-        startScore = parseInt(document.getElementById('x01-target').value);
-      }
-      if(currentSessionMode === 'split') startScore = 40;
-      if(currentSessionMode === 'cricket' || currentSessionMode === 'maxicricket') startScore = 0;
-      
-      activePlayers.push({
-        memberId: i,
-        name: pName,
-        score: startScore,
-        totalDarts: 0,
-        team: zugewiesenesTeam, // Nutzt dein manuell gesetztes Team!
-        cricketHits: (currentSessionMode === 'maxicricket') ? 
-        {10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0,18:0,19:0,20:0,25:0} : 
-        {15:0,16:0,17:0,18:0,19:0,20:0,25:0}
-      });
-    }
-  }
+ // KORREKTUR: Liest den Namen direkt aus den echten Daten aus, da kein Input-Feld mehr existiert
+ const pName = membersData[i] ? membersData[i].name.trim() : `Spieler ${i+1}`;
  
+ // Holt das vom Nutzer frei gewählte Team aus dem Dropdown
+ const teamDropdown = document.getElementById(`team-select-${i}`);
+ let zugewiesenesTeam = teamDropdown ? parseInt(teamDropdown.value) : 1;
+ 
+ if(cb && cb.checked) {
+ let startScore = 501;
+ 
+ // Greift auch bei der neuen Team-ID 'x01_teams'
+ if(currentSessionMode === 'x01' || currentSessionMode === 'x01_teams') {
+ startScore = parseInt(document.getElementById('x01-target').value);
+ }
+ if(currentSessionMode === 'split') startScore = 40;
+ if(currentSessionMode === 'cricket' || currentSessionMode === 'maxicricket') startScore = 0;
+ 
+ activePlayers.push({
+ memberId: i,
+ name: pName,
+ score: startScore,
+ totalDarts: 0,
+ team: zugewiesenesTeam, // Nutzt dein manuell gesetztes Team!
+ cricketHits: (currentSessionMode === 'maxicricket') ? 
+ {10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0,18:0,19:0,20:0,25:0} : 
+ {15:0,16:0,17:0,18:0,19:0,20:0,25:0}
+ });
+ }
+ }
  if(activePlayers.length === 0) { return alert("Bitte wähle mindestens 1 Mitglied aus!"); }
  currentPlayerIdx = 0; dartsThrownThisTurn = 0;
  isProcessingTurnChange = false;
- 
  // Schaltet das Standard-Scoreboard komplett ab, wir nutzen nur noch das große Multi-Display!
  document.getElementById('main-scoreboard').style.display = 'none';
- // Suche diese Zeilen in initTrainingSession() und ergänze die mittlere Zeile:
  document.getElementById('cricket-matrix-hud').style.display = 'block';
- 
- if(document.getElementById('app-version-date')) document.getElementById('app-version-date').style.display = 'none'; // <-- HIER ERGÄNZEN
- 
+ if(document.getElementById('app-version-date')) 
+document.getElementById('app-version-date').style.display = 'none'; 
  document.getElementById('setup-panel').style.opacity = '0.5';
-
- 
  updateHud();
- 
- // --- GARANTIERTES SCHLIESSEN DER SIDEBAR BEI SPIELSTART ---
- const menu = document.getElementById('sliding-settings-menu');
- if (menu) {
- menu.style.left = '-400px'; 
- menu.classList.remove('open');
- }
- 
+  // --- GARANTIERTES SCHLIESSEN DER SIDEBAR BEI SPIELSTART ---
+  const menu = document.getElementById('sliding-settings-menu');
+  if (menu) {
+    menu.style.left = '-500px'; /* KORREKTUR: Auch hier auf -460px setzen */
+    menu.classList.remove('open');
+  }
+
  logHistory(`=== Training gestartet: ${currentSessionMode.toUpperCase()} ===`);
 }
-
-
 
 
 
@@ -1801,58 +1999,179 @@ function triggerTurnChange() {
             const logBox = document.getElementById('history-log');
             logBox.innerHTML = `<div>${text}</div>` + logBox.innerHTML;
         }
-        // Verbindungs-Handler für das native Bluetooth-System des GranBoards
-        document.getElementById('btnConnect').addEventListener('click', async () => {
-            const statusBox = document.getElementById('btStatusBox');
-            try {
-                statusBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Suche Board...';
-                const device = await navigator.bluetooth.requestDevice({
-                    filters: [{ services: [GRANBOARD_SERVICE_UUID.toLowerCase()] }]
-                });
+        
 
-                const server = await device.gatt.connect();
-                const service = await server.getPrimaryService(GRANBOARD_SERVICE_UUID.toLowerCase());
-                const characteristic = await service.getCharacteristic(GRANBOARD_CHAR_UUID.toLowerCase());
 
-                await characteristic.startNotifications();
-                characteristic.addEventListener('characteristicvaluechanged', (e) => {
-    let value = e.target.value;
-    
-    // Bytes in Text umwandeln
-    let uint8Array = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
-    let rawString = new TextDecoder().decode(uint8Array);
-    
-    // Entfernt @, Zeilenumbrüche und Leerzeichen
-    let cleanString = rawString.replace(/[@\r\n]/g, '').trim();
-    
-    console.log("👉 Signal vom Board erhalten:", `"${cleanString}"`);
 
-    // 1. Regulärer Treffer aus der Matrix (z.B. ein Segment auf dem Board)
-    if (EXACT_BOARD_MATRIX[cleanString]) {
-        processHit(cleanString);
-    } 
-    // 2. ERWEITERTER SENSOR-SCHUTZ: Fängt jetzt auch das "OUT"-Signal deines Boards ab!
-    else if (cleanString === "OUT" || cleanString === "MISS" || cleanString === "" || cleanString === "M" || cleanString === "O" || cleanString.includes("0.0")) {
-        console.log("🎯 Vorbeisensor erkannt (OUT) -> Übergebe 'MISS' an Spiellogik.");
-        processHit("MISS");
-    } 
-    // 3. Unbekanntes Signal
-    else {
-        console.warn(`⚠️ Unbekannter Sensor-Code: "${cleanString}"`);
+
+// =========================================================================
+// SPIEL-AUTOMATIK & BLUETOOTH STATUS-LOGIK (NEU)
+// =========================================================================
+let isBoardConnected = false;
+
+// 1. Aktualisiert das Design des Bluetooth- und Start-Buttons
+function updateBluetoothButtonVisuals(status) {
+  const btnConnect = document.getElementById('btnConnect');
+  const statusBox = document.getElementById('btStatusBox');
+  if (!btnConnect) return;
+
+  if (status === 'searching') {
+    btnConnect.style.background = 'rgba(255, 170, 0, 0.2)';
+    btnConnect.style.border = '2px solid #ffaa00';
+    btnConnect.style.color = '#ffaa00';
+    btnConnect.innerText = 'SUCHE BOARD...';
+    btnConnect.style.boxShadow = '0 0 10px rgba(255, 170, 0, 0.3)';
+    if (statusBox) {
+      statusBox.className = "bt-status";
+      statusBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Suche Board...';
     }
+  } else if (status === 'connected') {
+    isBoardConnected = true;
+    btnConnect.style.background = 'rgba(57, 255, 20, 0.2)';
+    btnConnect.style.border = '2px solid #39ff14';
+    btnConnect.style.color = '#39ff14';
+    btnConnect.innerText = 'BOARD BEREIT';
+    btnConnect.style.boxShadow = '0 0 15px rgba(57, 255, 20, 0.5)';
+    if (statusBox) {
+      statusBox.className = "bt-status connected";
+      statusBox.innerHTML = '<i class="fa-solid fa-toggle-on"></i> Board Aktiv';
+    }
+  } else if (status === 'failed') {
+    isBoardConnected = false;
+    btnConnect.style.background = 'rgba(255, 0, 85, 0.2)';
+    btnConnect.style.border = '2px solid #ff0055';
+    btnConnect.style.color = '#ff0055';
+    btnConnect.innerText = 'BOARD VERBINDEN';
+    btnConnect.style.boxShadow = 'none';
+    if (statusBox) {
+      statusBox.className = "bt-status";
+      statusBox.innerHTML = '<i class="fa-solid fa-toggle-off"></i> Board Getrennt';
+    }
+  }
+  
+  // Start-Button blockieren oder freigeben
+  checkStartButtonLive();
+}
+
+// 2. Überschreibt die Live-Prüfung des Start-Buttons (Berücksichtigt Bluetooth)
+function checkStartButtonLive() {
+  const startBtn = document.getElementById('btnStartGame');
+  if (!startBtn) return;
+  
+  const ausgewaehlteSpieler = document.querySelectorAll('.member-checkbox:checked').length;
+  
+  if (!isBoardConnected) {
+    startBtn.disabled = true;
+    startBtn.innerHTML = "<strong>3.</strong> Erst Board suchen";
+    startBtn.style.background = "linear-gradient(135deg, #550011 0%, #990000 100%)";
+    startBtn.style.color = "#fff";
+    startBtn.style.cursor = "not-allowed";
+    startBtn.style.opacity = "0.9";
+  } else if (ausgewaehlteSpieler > 0) {
+    startBtn.disabled = false;
+    startBtn.innerHTML = "<strong>3.</strong> Training Starten";
+    startBtn.style.background = "linear-gradient(135deg, #009900 0%, #39ff14 100%)";
+    startBtn.style.color = "#000";
+    startBtn.style.cursor = "pointer";
+    startBtn.style.opacity = "1";
+  } else {
+    startBtn.disabled = true;
+    startBtn.innerHTML = "<strong>3.</strong> Spieler wählen";
+    startBtn.style.background = "linear-gradient(135deg, #990000 0%, #ff3333 100%)";
+    startBtn.style.color = "#fff";
+    startBtn.style.cursor = "not-allowed";
+    startBtn.style.opacity = "0.9";
+  }
+}
+
+// 3. Verbindungs-Handler mit deiner kompletten originalen Matrix- & Sensor-Auswertung
+document.getElementById('btnConnect').addEventListener('click', async () => {
+  updateBluetoothButtonVisuals('searching');
+  
+  try {
+    const device = await navigator.bluetooth.requestDevice({
+      filters: [{ services: [GRANBOARD_SERVICE_UUID.toLowerCase()] }]
+    });
+
+    const server = await device.gatt.connect();
+    const service = await server.getPrimaryService(GRANBOARD_SERVICE_UUID.toLowerCase());
+    const characteristic = await service.getCharacteristic(GRANBOARD_CHAR_UUID.toLowerCase());
+
+    await characteristic.startNotifications();
+    
+    characteristic.addEventListener('characteristicvaluechanged', (e) => {
+      let value = e.target.value;
+      
+      // Bytes in Text umwandeln
+      let uint8Array = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+      let rawString = new TextDecoder().decode(uint8Array);
+      
+      // Entfernt @, Zeilenumbrüche und Leerzeichen
+      let cleanString = rawString.replace(/[@\r\n]/g, '').trim();
+      
+      console.log("👉 Signal vom Board erhalten:", `"${cleanString}"`);
+
+      // 1. Regulärer Treffer aus der Matrix
+      if (EXACT_BOARD_MATRIX[cleanString]) {
+          processHit(cleanString);
+      } 
+      // 2. ERWEITERTER SENSOR-SCHUTZ: Vorbeisensor (OUT)
+      else if (cleanString === "OUT" || cleanString === "MISS" || cleanString === "" || cleanString === "M" || cleanString === "O" || cleanString.includes("0.0")) {
+          console.log("🎯 Vorbeisensor erkannt (OUT) -> Übergebe 'MISS' an Spiellogik.");
+          processHit("MISS");
+      } 
+      // 3. Unbekanntes Signal
+      else {
+          console.warn(`⚠️ Unbekannter Sensor-Code: "${cleanString}"`);
+      }
+    });
+
+    // Verbindung erfolgreich hergestellt
+    updateBluetoothButtonVisuals('connected');
+    logHistory("GranBoard erfolgreich via Bluetooth verbunden!");
+
+    // Automatische Trennung überwachen
+    device.addEventListener('gattserverdisconnected', () => {
+      updateBluetoothButtonVisuals('failed');
+      logHistory("Verbindung zum Board verloren!");
+    });
+
+  } catch (err) {
+    console.error(err);
+    updateBluetoothButtonVisuals('failed');
+    logHistory("Bluetooth-Suche abgebrochen.");
+  }
+});
+
+// 4. Intelligenter Startversuch beim ersten Antippen der Seite (Umgeht die Browser-Sperre)
+let autoSearchTriggered = false;
+
+function triggerAutomaticBoardSearch() {
+  if (autoSearchTriggered || isBoardConnected) return;
+  autoSearchTriggered = true;
+  
+  console.log("🚀 Erster Nutzer-Klick erkannt. Starte automatische Board-Suche...");
+  const btn = document.getElementById('btnConnect');
+  if (btn) {
+    btn.click();
+  }
+  
+  // Entfernt die Event-Listener wieder, damit sie nicht doppelt feuern
+  window.removeEventListener('click', triggerAutomaticBoardSearch);
+  window.removeEventListener('touchstart', triggerAutomaticBoardSearch);
+}
+
+// Wartet, bis die Seite da ist und lauscht auf die allererste Berührung
+window.addEventListener('DOMContentLoaded', () => {
+  // Zeigt sofort an, dass das Board erst verbunden werden muss
+  updateBluetoothButtonVisuals('failed');
+  
+  // Sobald du den Bildschirm berührst oder klickst, sucht er von selbst!
+  window.addEventListener('click', triggerAutomaticBoardSearch);
+  window.addEventListener('touchstart', triggerAutomaticBoardSearch);
 });
 
 
-                statusBox.className = "bt-status connected";
-                statusBox.innerHTML = '<i class="fa-solid fa-toggle-on"></i> Board Aktiv';
-                logHistory("GranBoard erfolgreich via Bluetooth verbunden!");
-            } catch (err) {
-                console.error(err);
-                statusBox.className = "bt-status";
-                statusBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Fehler';
-                alert("Bluetooth-Verbindung fehlgeschlagen. Tastatur-Simulation aktiv: Drücke die Tasten 1-9 für Single-Treffer auf dem Keyboard oder 'B' für Bullseye.");
-            }
-        });
 
         // Tastatur-Simulation für Testläufe ohne echte Dartscheibe
         window.addEventListener('keydown', (e) => {
