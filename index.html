@@ -709,7 +709,7 @@ body {
  <!-- MITTIGER ÄNDERUNGS-ZEITSTEMPEL MIT UHRZEIT -->
  <div id="app-version-date" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: bold; color: var(--accent-cyan); text-shadow: 0 0 15px rgba(0, 240, 255, 0.6); background: rgba(5, 7, 15, 0.85); padding: 15px 30px; border: 2px dashed var(--accent-cyan); border-radius: 10px; z-index: 10; pointer-events: none; letter-spacing: 2px; text-align: center; box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);">
    <i class="fa-solid fa-code-branch" style="margin-right: 10px;"></i> GranBoard 3D Pro<br>
-   <span style="font-size: 14px; color: #aaa; font-weight: normal; display: block; margin-top: 5px;">Letztes Update: 07.11.2026 - 20:35 Uhr</span>
+   <span style="font-size: 14px; color: #aaa; font-weight: normal; display: block; margin-top: 5px;">Letztes Update: 08.11.2026 - 20:35 Uhr</span>
  </div>
 
 
@@ -1685,26 +1685,35 @@ if ((currentSessionMode === 'x01' || currentSessionMode === 'x01_teams') && hit.
           else masterMember.cricket++;
         }
  
-        logHistory(` 🎉 ${p.name} gewinnt das Cricket-Leg!`);
+        logHistory(` ${p.name} gewinnt das Cricket-Leg!`);
         showBanner(`${p.name} SIEGT!`);
         renderMembersListSidebar();
- 
+
+        // NEU: Sofortige Sperre setzen, damit keine doppelten Signale durchgehen
+        isProcessingTurnChange = true;
+
         let winSound = localStorage.getItem('mkk_sound_win') || 'Gewonnen.wav';
         new Audio(winSound).play().catch(e => {});
- 
+
         setTimeout(() => {
-          hideBanner();
-          activePlayers.forEach(player => {
-            player.score = 0;
-            player.totalDarts = 0;
-            player.cricketHits = (currentSessionMode === 'maxicricket') ? 
-              {10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0,18:0,19:0,20:0,25:0} : 
-              {15:0,16:0,17:0,18:0,19:0,20:0,25:0};
-          });
-          currentPlayerIdx = 0; dartsThrownThisTurn = 0;
-          updateHud();
+            hideBanner();
+            activePlayers.forEach(player => {
+                player.score = 0;
+                player.totalDarts = 0;
+                player.cricketHits = (currentSessionMode === 'maxicricket') ? 
+                 {10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0,18:0,19:0,20:0,25:0} : 
+                 {15:0,16:0,17:0,18:0,19:0,20:0,25:0};
+            });
+            currentPlayerIdx = 0; 
+            dartsThrownThisTurn = 0;
+            
+            // NEU: Sperre nach dem Reset wieder aufheben für das nächste Spiel
+            isProcessingTurnChange = false; 
+            
+            updateHud();
         }, 5000);
         return;
+
       }
     }
   }
