@@ -1,8 +1,24 @@
-const CACHE_NAME = 'granboard-v1';
+const CACHE_NAME = 'granboard-v3'; // Version erhöht, damit das Handy das Update sofort lädt
 const ASSETS = [
   './',
   './index.html',
-  './manifest.json'
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png',
+  './Bull.wav',
+  './Bull-laut.wav',
+  './Bull-lauter.wav',
+  './Doppel-lauter.wav',
+  './Einfach-pip.wav',
+  './Gewonnen.wav',
+  './Trippel-pip.wav',
+  './Trippel17-lauter.wav',
+  './Trippel18-lauter.wav',
+  './Trippel19-lauter.wav',
+  './Trippel20-lauter.wav',
+  './Vorbei.wav',
+  './spielerwechsel.wav',
+  './überworfen.wav' // Jetzt erfolgreich hinzugefügt!
 ];
 
 // Installieren und Assets in den Cache laden
