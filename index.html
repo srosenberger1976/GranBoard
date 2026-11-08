@@ -596,7 +596,6 @@ body {
  <div class="sidebar open" id="sliding-settings-menu" style="left: 0px; padding: 20px 25px 15px 25px;">
    
    <!-- TOP-BAR: Maximale Breite, kein Quetschen mehr -->
-   <!-- TOP-BAR: Automatischer Suchmodus integriert -->
    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 15px; gap: 15px; width: 100%;">
      
      <!-- Menü schließen -->
@@ -604,19 +603,19 @@ body {
        ◀ MENÜ
      </button>
      
-     <!-- Rosis Titel -->
+     <!-- NEU: Rosis fetter, blinkender Titel -->
      <div style="text-align: center; flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Orbitron', sans-serif; line-height: 1.1;">
        <span class="blink-neon" style="font-size: 22px; letter-spacing: 1.5px;">GRANBOARD</span>
        <span style="font-size: 13px; color: var(--accent-gold); font-weight: bold; letter-spacing: 3px; margin-top: 2px; text-transform: uppercase;">by Rosi</span>
      </div>
      
-     <!-- Board-Status-Button (Startet im gelben Suchmodus) -->
-     <button id="btnConnect" style="background: rgba(255, 170, 0, 0.2); border: 2px solid #ffaa00; color: #ffaa00; font-size: 13px; padding: 7px 14px; border-radius: 6px; cursor: pointer; transition: all 0.3s; font-family: 'Orbitron', sans-serif; font-weight: 900; white-space: nowrap;"
-             title="Board-Status">
-       SUCHE BOARD...
+     <!-- Board verbinden (Hat jetzt massig Platz!) -->
+     <button id="btnConnect" style="background: rgba(0, 85, 255, 0.25); border: 2px solid #00d2ff; color: #00d2ff; font-size: 14px; padding: 7px 14px; border-radius: 6px; cursor: pointer; transition: all 0.3s; font-family: 'Orbitron', sans-serif; font-weight: 900; white-space: nowrap;"
+             onmouseover="this.style.background='rgba(0, 210, 255, 0.4)'; this.style.boxShadow='0 0 12px #00d2ff';" 
+             onmouseout="this.style.background='rgba(0, 85, 255, 0.25)'; this.style.boxShadow='none';">
+       CONNECT BT
      </button>
    </div>
-
 
 
    <!-- 1. TRAINING-SETUP (Größere Beschriftungen & Boxen) -->
@@ -680,6 +679,20 @@ body {
      </button>
    </div>
 
+<!-- NEU: ABRECHNUNGS-BUTTON -->
+<div class="section-box" style="margin-bottom: 18px; padding: 10px 18px;">
+ <button type="button" onclick="zeigeKassenAbrechnung()" style="width: 100%; background: linear-gradient(135deg, #ffaa00 0%, #ff5500 100%); color: #000; font-weight: bold; padding: 12px; cursor: pointer; font-family: 'Orbitron'; font-size: 15px; border: none; border-radius: 6px; box-shadow: 0 0 15px rgba(255,170,0,0.3);">
+  <i class="fa-solid fa-cash-register"></i> KASSEN-ABRECHNUNG 💸
+ </button>
+</div>
+
+
+
+
+
+
+
+
    <!-- WURFHISTORIE (Nach unten geschoben, scrollt bei Bedarf ein) -->
    <div class="section-box" style="padding: 12px 18px; margin-top: auto;">
      <div class="section-title" style="font-size: 14px; margin-bottom: 8px; color: #666;"><i class="fa-solid fa-clock-rotate-left"></i> Wurfhistorie</div>
@@ -690,41 +703,19 @@ body {
  </div>
 
 
- <!-- MITTIGER ANLEITUNGS-KASTEN (ERSETZT DEN ZEITSTEMPEL) -->
- <div id="app-version-date" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Orbitron', sans-serif; background: rgba(5, 7, 15, 0.96); padding: 25px 35px; border: 2px solid var(--accent-cyan); border-radius: 12px; z-index: 10; pointer-events: none; box-shadow: 0 0 35px rgba(0, 240, 255, 0.25); width: 100%; max-width: 480px; box-sizing: border-box;">
-   
-   <h2 style="color: var(--accent-cyan); text-shadow: 0 0 15px rgba(0, 240, 255, 0.6); font-size: 20px; margin-bottom: 15px; text-align: center; letter-spacing: 2px; font-weight: 900;">
-     SCHNELLSTART-ANLEITUNG
-   </h2>
-   
-   <div style="text-align: left; font-size: 14px; color: #e0f4f8; display: flex; flex-direction: column; gap: 12px; line-height: 1.4; font-family: sans-serif;">
-     
-     <div style="display: flex; gap: 10px; align-items: flex-start;">
-       <span style="color: var(--accent-gold); font-weight: bold; font-family: 'Orbitron'; font-size: 15px;">1.</span>
-       <span><strong>Board verbinden:</strong> Tippe irgendwo auf den Bildschirm, um die Bluetooth-Suche zu starten, oder nutze den Button oben rechts.</span>
-     </div>
-     
-     <div style="display: flex; gap: 10px; align-items: flex-start;">
-       <span style="color: var(--accent-gold); font-weight: bold; font-family: 'Orbitron'; font-size: 15px;">2.</span>
-       <span><strong>Spielmodus wählen:</strong> Stelle im Menü links deinen gewünschten Modus (Einzelspieler oder Team-Modus) ein.</span>
-     </div>
-     
-     <div style="display: flex; gap: 10px; align-items: flex-start;">
-       <span style="color: var(--accent-gold); font-weight: bold; font-family: 'Orbitron'; font-size: 15px;">3.</span>
-       <span><strong>Spieler & Teams antippen:</strong> Öffne das Pop-up. Klicke mehrfach auf eine Spielerkarte, um sie zu aktivieren oder einem Team (1-5) zuzuordnen.</span>
-     </div>
-     
-     <div style="display: flex; gap: 10px; align-items: flex-start;">
-       <span style="color: var(--accent-gold); font-weight: bold; font-family: 'Orbitron'; font-size: 15px;">4.</span>
-       <span><strong>Namen ändern:</strong> Halte eine Spielerkarte auf dem Tablet <strong>lange gedrückt</strong> (oder Rechtsklick am PC), um den Namen zu überschreiben.</span>
-     </div>
-     
-     <div style="display: flex; gap: 10px; align-items: flex-start; margin-top: 5px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
-       <span style="color: #aaa; font-size: 13px;">Sobald das Board bereit und mindestens ein Spieler aktiv ist, schaltet der rote Start-Button unten links grün frei.</span>
-     </div>
-     
-   </div>
+ <!-- 3D AREA AND HUD OVERLAYS (BEREINIGT) -->
+ <div id="canvas3d-container">
+ <div id="action-banner">PFEILE RAUSZIEHEN!</div>
+ <!-- MITTIGER ÄNDERUNGS-ZEITSTEMPEL MIT UHRZEIT -->
+ <div id="app-version-date" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: bold; color: var(--accent-cyan); text-shadow: 0 0 15px rgba(0, 240, 255, 0.6); background: rgba(5, 7, 15, 0.85); padding: 15px 30px; border: 2px dashed var(--accent-cyan); border-radius: 10px; z-index: 10; pointer-events: none; letter-spacing: 2px; text-align: center; box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);">
+   <i class="fa-solid fa-code-branch" style="margin-right: 10px;"></i> GranBoard 3D Pro<br>
+   <span style="font-size: 14px; color: #aaa; font-weight: normal; display: block; margin-top: 5px;">Letztes Update: 07.11.2026 - 20:35 Uhr</span>
  </div>
+
+
+
+
+
 
  <div class="hud-overlay">
  <div class="hud-top" style="display: flex; flex-direction: column; width: 100%; align-items: center; gap: 15px;">
@@ -740,7 +731,6 @@ body {
  <i class="fa-solid fa-location-arrow dart-icon" id="dart-3"></i>
  </div>
  </div>
-
 
  <!-- DAS MULTI-DISPLAY FÜR UNTEREINANDER (CRICKET & SPLIT SCORE) -->
  <div id="cricket-matrix-hud" style="display:none; width: 100%; background: transparent;">
@@ -1285,16 +1275,24 @@ function initTrainingSession() {
  if(currentSessionMode === 'split') startScore = 40;
  if(currentSessionMode === 'cricket' || currentSessionMode === 'maxicricket') startScore = 0;
  
- activePlayers.push({
+activePlayers.push({
  memberId: i,
  name: pName,
  score: startScore,
  totalDarts: 0,
- team: zugewiesenesTeam, // Nutzt dein manuell gesetztes Team!
+ team: zugewiesenesTeam,
+ // --- NEU: STRAFKASSE VARIABLEN ---
+ penalties: {
+    misses: 0,     // Anzahl Fehlwürfe
+    lowScores: 0,  // Anzahl Runden < 40 Punkte
+    gamesCount: 1  // Erste Spielgebühr direkt buchen (0,50€)
+ },
+ // ---------------------------------
  cricketHits: (currentSessionMode === 'maxicricket') ? 
- {10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0,18:0,19:0,20:0,25:0} : 
- {15:0,16:0,17:0,18:0,19:0,20:0,25:0}
- });
+  {10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0,18:0,19:0,20:0,25:0} : 
+  {15:0,16:0,17:0,18:0,19:0,20:0,25:0}
+});
+
  }
  }
  if(activePlayers.length === 0) { return alert("Bitte wähle mindestens 1 Mitglied aus!"); }
@@ -1619,6 +1617,32 @@ function processHit(matrixKey) {
   const p = activePlayers[currentPlayerIdx];
   const points = hit.v * hit.m;
 
+
+// --- NEU: FEHLWURF-STRAFE PRÜFEN ---
+if ((currentSessionMode === 'x01' || currentSessionMode === 'x01_teams') && hit.v === 0) {
+    // Prüfen, ob der Spieler NICHT im Check-Bereich ist (Restpunkte > 50 als sichere Grenze für "nicht beim Checken")
+    if (p.score > 50) {
+        p.penalties.misses++;
+        
+        // Lustige Sprüche für Fehlwürfe
+        const missSprüche = [
+            "Die Wand freut sich! (0,20 €)",
+            "Kim Huybrechts hat angerufen, er will seine Streuung zurück! (0,20 €)",
+            "Scheibe verfehlt... Brille Fielmann? (0,20 €)",
+            "Das war knapp! Also... knapp neben der ganzen Dartscheibe. (0,20 €)"
+        ];
+        const zufallSpruch = missSprüche[Math.floor(Math.random() * missSprüche.length)];
+        logHistory(`💰 ${p.name}: ${zufallSpruch}`);
+    }
+}
+
+
+
+
+
+
+
+
   // Würfe und Pfeile hochzählen
   dartsThrownThisTurn++; 
   p.totalDarts++; 
@@ -1757,6 +1781,8 @@ function processHit(matrixKey) {
         hideBanner();
         activePlayers.forEach(player => {
           player.score = x01Target;
+player.penalties.gamesCount++; // Erhöht die Anzahl der Spiele um 1 für die Abrechnung
+
           player.totalDarts = 0;
         });
         currentPlayerIdx = 0; dartsThrownThisTurn = 0;
@@ -1887,9 +1913,50 @@ function processHit(matrixKey) {
   // Display aktualisieren
   updateHud();
 
-  // --- RUNDENENDE PRÜFEN (REPARIERT OHNE CODESYNTAX-FEHLER) ---
-  if (dartsThrownThisTurn >= 3) { 
-    if (currentSessionMode === 'split') {
+ if (dartsThrownThisTurn >= 3) { 
+    // --- NEU: LOW-SCORE STRAFE AM RUNDENENDE PRÜFEN ---
+    if (currentSessionMode === 'x01' || currentSessionMode === 'x01_teams') {
+        // Berechnen, wie viele Punkte in dieser Runde erzielt wurden
+        let erzieltePunkteInRunde = p.scoreAtStartOfTurn - p.score;
+        
+        // Wenn der Wurf ein Bust (Überworfen) war, setzen wir die erzielten Punkte auf 0
+        if (isX01Bust) erzieltePunkteInRunde = 0;
+
+        // Strafe wenn Punkte < 40 UND Start-Restpunkte > 100 waren
+        if (erzieltePunkteInRunde < 40 && p.scoreAtStartOfTurn > 100) {
+            p.penalties.lowScores++;
+            
+            const lowSprüche = [
+                `Nur ${erzieltePunkteInRunde} Punkte? Das gibt Mecker! (0,10 €)`,
+                `${erzieltePunkteInRunde} Punkte... Lokus-Runde! (0,10 €)`,
+                "Not gegen Elend. Bitte einmal 10 Cent in die Kasse.",
+                "Sicherheits-Darts geworfen? Das kostet! (0,10 €)"
+            ];
+            const zufallLow = lowSprüche[Math.floor(Math.random() * lowSprüche.length)];
+            logHistory(`💰 ${p.name}: ${zufallLow}`);
+        }
+    }
+    // --- ENDE LOW-SCORE STRAFE ---
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if (currentSessionMode === 'split') {
       
       // KORREKTUR: Name zusammengeschrieben, damit JavaScript nicht abstürzt!
       const hatteTreffer = p.roundHitsThisTurn > 0;
@@ -1999,177 +2066,124 @@ function triggerTurnChange() {
             const logBox = document.getElementById('history-log');
             logBox.innerHTML = `<div>${text}</div>` + logBox.innerHTML;
         }
+
+
+
+
+
+
+// =========================================================================
+// NEU: INITIALER STATUS BEIM ÖFFNEN DER APP
+// =========================================================================
+function setInitialConnectionStatus() {
+    const statusBox = document.getElementById('btStatusBox');
+    if (statusBox) {
+        statusBox.className = "bt-status"; // Setzt das rote Standard-Design
+        statusBox.style.borderColor = "#ff3333";
+        statusBox.style.color = "#ff3333";
+        statusBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Erst Board suchen';
+    }
+}
+// Direkt beim Laden ausführen
+document.addEventListener("DOMContentLoaded", setInitialConnectionStatus);
+
+
+// =========================================================================
+// VERBINDUNGS-HANDLER (Zentralisierte Funktion)
+// =========================================================================
+async function connectToGranBoard() {
+    const statusBox = document.getElementById('btStatusBox');
+    if (!statusBox) return;
+
+    try {
+        statusBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Suche Board...';
+        statusBox.style.borderColor = "var(--accent-gold)";
+        statusBox.style.color = "var(--accent-gold)";
+
+        const device = await navigator.bluetooth.requestDevice({
+            filters: [{ services: [GRANBOARD_SERVICE_UUID.toLowerCase()] }]
+        });
+
+        const server = await device.gatt.connect();
+        const service = await server.getPrimaryService(GRANBOARD_SERVICE_UUID.toLowerCase());
+        const characteristic = await service.getCharacteristic(GRANBOARD_CHAR_UUID.toLowerCase());
         
+        await characteristic.startNotifications();
+        characteristic.addEventListener('characteristicvaluechanged', (e) => {
+            let value = e.target.value;
+            let uint8Array = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+            let rawString = new TextDecoder().decode(uint8Array);
+            let cleanString = rawString.replace(/[@\r\n]/g, '').trim();
+            
+            console.log("Signal vom Board erhalten:", `"${cleanString}"`);
+            
+            if (EXACT_BOARD_MATRIX[cleanString]) {
+                processHit(cleanString);
+            } else if (cleanString === "OUT" || cleanString === "MISS" || cleanString === "" || cleanString === "M" || cleanString === "O" || cleanString.includes("0.0")) {
+                console.log("Vorbeisensor erkannt (OUT) -> Übergebe 'MISS' an Spiellogik.");
+                processHit("MISS");
+            } else {
+                console.warn(`Unbekannter Sensor-Code: "${cleanString}"`);
+            }
+        });
 
+        // ERFOLGFALL -> Button wird GRÜN
+        statusBox.className = "bt-status connected";
+        statusBox.style.borderColor = "var(--accent-green)";
+        statusBox.style.color = "var(--accent-green)";
+        statusBox.innerHTML = '<i class="fa-solid fa-toggle-on"></i> Board Aktiv';
+        logHistory("GranBoard erfolgreich via Bluetooth verbunden!");
 
+        // Überwachung für plötzliche Verbindungsabbrüche
+        device.addEventListener('gattserverdisconnected', onDisconnected);
 
-
-// =========================================================================
-// SPIEL-AUTOMATIK & BLUETOOTH STATUS-LOGIK (NEU)
-// =========================================================================
-let isBoardConnected = false;
-
-// 1. Aktualisiert das Design des Bluetooth- und Start-Buttons
-function updateBluetoothButtonVisuals(status) {
-  const btnConnect = document.getElementById('btnConnect');
-  const statusBox = document.getElementById('btStatusBox');
-  if (!btnConnect) return;
-
-  if (status === 'searching') {
-    btnConnect.style.background = 'rgba(255, 170, 0, 0.2)';
-    btnConnect.style.border = '2px solid #ffaa00';
-    btnConnect.style.color = '#ffaa00';
-    btnConnect.innerText = 'SUCHE BOARD...';
-    btnConnect.style.boxShadow = '0 0 10px rgba(255, 170, 0, 0.3)';
-    if (statusBox) {
-      statusBox.className = "bt-status";
-      statusBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Suche Board...';
+    } catch (err) {
+        console.error(err);
+        // FEHLERFALL / ABBRUCH -> Button wird ROT
+        onDisconnected();
+        alert("Bluetooth-Verbindung fehlgeschlagen. Tastatur-Simulation aktiv: Drücke die Tasten 1-9 oder 'B'.");
     }
-  } else if (status === 'connected') {
-    isBoardConnected = true;
-    btnConnect.style.background = 'rgba(57, 255, 20, 0.2)';
-    btnConnect.style.border = '2px solid #39ff14';
-    btnConnect.style.color = '#39ff14';
-    btnConnect.innerText = 'BOARD BEREIT';
-    btnConnect.style.boxShadow = '0 0 15px rgba(57, 255, 20, 0.5)';
-    if (statusBox) {
-      statusBox.className = "bt-status connected";
-      statusBox.innerHTML = '<i class="fa-solid fa-toggle-on"></i> Board Aktiv';
-    }
-  } else if (status === 'failed') {
-    isBoardConnected = false;
-    btnConnect.style.background = 'rgba(255, 0, 85, 0.2)';
-    btnConnect.style.border = '2px solid #ff0055';
-    btnConnect.style.color = '#ff0055';
-    btnConnect.innerText = 'BOARD VERBINDEN';
-    btnConnect.style.boxShadow = 'none';
-    if (statusBox) {
-      statusBox.className = "bt-status";
-      statusBox.innerHTML = '<i class="fa-solid fa-toggle-off"></i> Board Getrennt';
-    }
-  }
-  
-  // Start-Button blockieren oder freigeben
-  checkStartButtonLive();
 }
 
-// 2. Überschreibt die Live-Prüfung des Start-Buttons (Berücksichtigt Bluetooth)
-function checkStartButtonLive() {
-  const startBtn = document.getElementById('btnStartGame');
-  if (!startBtn) return;
-  
-  const ausgewaehlteSpieler = document.querySelectorAll('.member-checkbox:checked').length;
-  
-  if (!isBoardConnected) {
-    startBtn.disabled = true;
-    startBtn.innerHTML = "<strong>3.</strong> Erst Board suchen";
-    startBtn.style.background = "linear-gradient(135deg, #550011 0%, #990000 100%)";
-    startBtn.style.color = "#fff";
-    startBtn.style.cursor = "not-allowed";
-    startBtn.style.opacity = "0.9";
-  } else if (ausgewaehlteSpieler > 0) {
-    startBtn.disabled = false;
-    startBtn.innerHTML = "<strong>3.</strong> Training Starten";
-    startBtn.style.background = "linear-gradient(135deg, #009900 0%, #39ff14 100%)";
-    startBtn.style.color = "#000";
-    startBtn.style.cursor = "pointer";
-    startBtn.style.opacity = "1";
-  } else {
-    startBtn.disabled = true;
-    startBtn.innerHTML = "<strong>3.</strong> Spieler wählen";
-    startBtn.style.background = "linear-gradient(135deg, #990000 0%, #ff3333 100%)";
-    startBtn.style.color = "#fff";
-    startBtn.style.cursor = "not-allowed";
-    startBtn.style.opacity = "0.9";
-  }
+// Hilfsfunktion wenn das Board getrennt wird oder die Suche fehlschlägt
+function onDisconnected() {
+    const statusBox = document.getElementById('btStatusBox');
+    if (statusBox) {
+        statusBox.className = "bt-status";
+        statusBox.style.borderColor = "#ff3333";
+        statusBox.style.color = "#ff3333";
+        statusBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Erst Board suchen';
+    }
 }
 
-// 3. Verbindungs-Handler mit deiner kompletten originalen Matrix- & Sensor-Auswertung
-document.getElementById('btnConnect').addEventListener('click', async () => {
-  updateBluetoothButtonVisuals('searching');
-  
-  try {
-    const device = await navigator.bluetooth.requestDevice({
-      filters: [{ services: [GRANBOARD_SERVICE_UUID.toLowerCase()] }]
-    });
+// Event-Listener für den manuellen Connect-Button oben rechts im Menü
+document.getElementById('btnConnect').addEventListener('click', connectToGranBoard);
 
-    const server = await device.gatt.connect();
-    const service = await server.getPrimaryService(GRANBOARD_SERVICE_UUID.toLowerCase());
-    const characteristic = await service.getCharacteristic(GRANBOARD_CHAR_UUID.toLowerCase());
-
-    await characteristic.startNotifications();
+// =========================================================================
+// NEU: AUTO-SUCHE BEI DER ERSTEN BENUTZER-INTERAKTION
+// =========================================================================
+// Da der Browser den direkten Autostart blockiert, triggern wir die Suche, 
+// sobald der Nutzer das erste Mal irgendwo auf die App tippt oder klickt.
+document.addEventListener('click', function triggerAutoConnect() {
+    // Verhindert, dass die Suche bei jedem Klick erneut startet
+    document.removeEventListener('click', triggerAutoConnect);
     
-    characteristic.addEventListener('characteristicvaluechanged', (e) => {
-      let value = e.target.value;
-      
-      // Bytes in Text umwandeln
-      let uint8Array = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
-      let rawString = new TextDecoder().decode(uint8Array);
-      
-      // Entfernt @, Zeilenumbrüche und Leerzeichen
-      let cleanString = rawString.replace(/[@\r\n]/g, '').trim();
-      
-      console.log("👉 Signal vom Board erhalten:", `"${cleanString}"`);
+    // Startet die Suche im Hintergrund
+    connectToGranBoard();
+}, { once: true });
 
-      // 1. Regulärer Treffer aus der Matrix
-      if (EXACT_BOARD_MATRIX[cleanString]) {
-          processHit(cleanString);
-      } 
-      // 2. ERWEITERTER SENSOR-SCHUTZ: Vorbeisensor (OUT)
-      else if (cleanString === "OUT" || cleanString === "MISS" || cleanString === "" || cleanString === "M" || cleanString === "O" || cleanString.includes("0.0")) {
-          console.log("🎯 Vorbeisensor erkannt (OUT) -> Übergebe 'MISS' an Spiellogik.");
-          processHit("MISS");
-      } 
-      // 3. Unbekanntes Signal
-      else {
-          console.warn(`⚠️ Unbekannter Sensor-Code: "${cleanString}"`);
-      }
-    });
 
-    // Verbindung erfolgreich hergestellt
-    updateBluetoothButtonVisuals('connected');
-    logHistory("GranBoard erfolgreich via Bluetooth verbunden!");
 
-    // Automatische Trennung überwachen
-    device.addEventListener('gattserverdisconnected', () => {
-      updateBluetoothButtonVisuals('failed');
-      logHistory("Verbindung zum Board verloren!");
-    });
 
-  } catch (err) {
-    console.error(err);
-    updateBluetoothButtonVisuals('failed');
-    logHistory("Bluetooth-Suche abgebrochen.");
-  }
-});
 
-// 4. Intelligenter Startversuch beim ersten Antippen der Seite (Umgeht die Browser-Sperre)
-let autoSearchTriggered = false;
 
-function triggerAutomaticBoardSearch() {
-  if (autoSearchTriggered || isBoardConnected) return;
-  autoSearchTriggered = true;
-  
-  console.log("🚀 Erster Nutzer-Klick erkannt. Starte automatische Board-Suche...");
-  const btn = document.getElementById('btnConnect');
-  if (btn) {
-    btn.click();
-  }
-  
-  // Entfernt die Event-Listener wieder, damit sie nicht doppelt feuern
-  window.removeEventListener('click', triggerAutomaticBoardSearch);
-  window.removeEventListener('touchstart', triggerAutomaticBoardSearch);
-}
 
-// Wartet, bis die Seite da ist und lauscht auf die allererste Berührung
-window.addEventListener('DOMContentLoaded', () => {
-  // Zeigt sofort an, dass das Board erst verbunden werden muss
-  updateBluetoothButtonVisuals('failed');
-  
-  // Sobald du den Bildschirm berührst oder klickst, sucht er von selbst!
-  window.addEventListener('click', triggerAutomaticBoardSearch);
-  window.addEventListener('touchstart', triggerAutomaticBoardSearch);
-});
+
+
+
+
+
+
 
 
 
@@ -2323,6 +2337,45 @@ document.addEventListener("DOMContentLoaded", () => {
   loadSoundSettings();
 });
 
+// =========================================================================
+// NEU: KASSEN-ABRECHNUNGS-FUNKTION (LIVE-BERECHNUNG)
+// =========================================================================
+function zeigeKassenAbrechnung() {
+    if (activePlayers.length === 0) {
+        return alert("Es läuft aktuell kein Training oder es wurden keine Spieler ausgewählt!");
+    }
+
+    let abrechnungsText = "=== 🎯 GRANBOARD STRAFKASSE ABRECHNUNG ===\n\n";
+    let gesamtKasse = 0;
+
+    activePlayers.forEach(p => {
+        let kostenMisses = p.penalties.misses * 0.20;
+        let kostenLow = p.penalties.lowScores * 0.10;
+        let kostenSpiele = p.penalties.gamesCount * 0.50;
+        let spielerTotal = kostenMisses + kostenLow + kostenSpiele;
+        gesamtKasse += spielerTotal;
+
+        abrechnungsText += `👤 SPIELER: ${p.name}\n`;
+        abrechnungsText += `  • Spiele-Gebühr (${p.penalties.gamesCount}x): ${kostenSpiele.toFixed(2)} €\n`;
+        abrechnungsText += `  • Fehlwürfe (${p.penalties.misses}x): ${kostenMisses.toFixed(2)} €\n`;
+        abrechnungsText += `  • Runden < 40 Pkt (${p.penalties.lowScores}x): ${kostenLow.toFixed(2)} €\n`;
+        abrechnungsText += `  > JZW-SCHULDEN: ${spielerTotal.toFixed(2)} €\n`;
+        abrechnungsText += `----------------------------------------\n`;
+    });
+
+    abrechnungsText += `\n💰 GESAMT-KASSENSTAND: ${gesamtKasse.toFixed(2)} €`;
+    
+    alert(abrechnungsText);
+}
+
+
+
+
+
+
+
+
+
 // PWA Service Worker Registrierung
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -2331,6 +2384,16 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.log('Service Worker Fehler:', err));
   });
 }
+
+
+
+
+
+
+
+
+
+
 </script>
 </body>
 </html>
