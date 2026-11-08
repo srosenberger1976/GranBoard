@@ -664,42 +664,65 @@ body {
      </div>
    </div> 
 
-   <!-- 2. SPIELER AUSWÄHLEN -->
-   <div class="section-box" style="margin-bottom: 18px; padding: 15px 18px;">
-     <div class="section-title" style="font-size: 16px; margin-bottom: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;"><i class="fa-solid fa-users"></i> Trainingsteilnehmer</div>
-     <button type="button" onclick="openPlayerModal()" style="width: 100%; background: linear-gradient(135deg, #111424 0%, #1b223c 100%); border: 2px solid var(--accent-cyan); color: var(--accent-cyan); font-weight: bold; padding: 14px; cursor: pointer; box-shadow: 0 0 12px rgba(0,240,255,0.15); margin-bottom: 0; font-family: 'Orbitron'; font-size: 15px; letter-spacing: 1px;">
-       <i class="fa-solid fa-user-gear"></i> SPIELER AUSWÄHLEN 👥
-     </button>
-   </div>
 
-   <!-- 3. TRAINING STARTEN -->
-   <div class="section-box" style="margin-bottom: 25px; padding: 12px 18px;">
-     <button id="btnStartGame" onclick="initTrainingSession()" disabled style="background: linear-gradient(135deg, #990000 0%, #ff3333 100%); color: #fff; font-weight: bold; padding: 16px; cursor: not-allowed; opacity: 0.9; margin-bottom: 0; width: 100%; font-family: 'Orbitron'; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; border-radius: 6px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
-       Spieler wählen
-     </button>
-   </div>
 
-<!-- NEU: ABRECHNUNGS-BUTTON -->
-<div class="section-box" style="margin-bottom: 18px; padding: 10px 18px;">
- <button type="button" onclick="zeigeKassenAbrechnung()" style="width: 100%; background: linear-gradient(135deg, #ffaa00 0%, #ff5500 100%); color: #000; font-weight: bold; padding: 12px; cursor: pointer; font-family: 'Orbitron'; font-size: 15px; border: none; border-radius: 6px; box-shadow: 0 0 15px rgba(255,170,0,0.3);">
-  <i class="fa-solid fa-cash-register"></i> KASSEN-ABRECHNUNG 💸
+
+
+
+
+ <!-- 2. FÜR HEUTE AUSWÄHLEN (Der blaue Button rutscht direkt darunter) -->
+ <div class="section-box" style="margin-bottom: 12px; padding: 10px 18px;">
+ <button type="button" onclick="openPlayerModal()" style="width: 100%; background: linear-gradient(135deg, #111424 0%, #1b223c 100%); border: 2px solid var(--accent-cyan); color: var(--accent-cyan); font-weight: bold; padding: 14px; cursor: pointer; box-shadow: 0 0 12px rgba(0,240,255,0.15); margin-bottom: 0; font-family: 'Orbitron'; font-size: 15px; letter-spacing: 1px;">
+ <i class="fa-solid fa-user-gear"></i> SPIELER FÜR'S SPIEL AUSWÄHLEN 👥
  </button>
-</div>
+ </div>
 
 
 
 
+ <!-- 1. TRAINING STARTEN (Der rote/grüne Button ganz oben) -->
+ <div class="section-box" style="margin-bottom: 12px; padding: 12px 18px;">
+ <button id="btnStartGame" onclick="initTrainingSession()" disabled 
+style="background: linear-gradient(135deg, #990000 0%, #ff3333 100%); color: 
+#fff; font-weight: bold; padding: 16px; cursor: not-allowed; opacity: 0.9; 
+margin-bottom: 0; width: 100%; font-family: 'Orbitron'; font-size: 16px; 
+text-transform: uppercase; letter-spacing: 1px; border-radius: 6px; border: 
+none; box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
+ Spieler wählen
+ </button>
+ </div>
 
 
 
+ <!-- 3. KASSEN-ABRECHNUNG (Der orangefarbene Button als dritter im Bunde) -->
+ <div class="section-box" style="margin-bottom: 20px; padding: 10px 18px;">
+ <button type="button" onclick="zeigeKassenAbrechnung()" style="width: 100%; 
+background: linear-gradient(135deg, #ffaa00 0%, #ff5500 100%); color: #000; 
+font-weight: bold; padding: 12px; cursor: pointer; font-family: 'Orbitron'; 
+font-size: 15px; border: none; border-radius: 6px; box-shadow: 0 0 15px 
+rgba(255,170,0,0.3);">
+ <i class="fa-solid fa-cash-register"></i> KASSEN-ABRECHNUNG 💸
+ </button>
+ </div>
 
-   <!-- WURFHISTORIE (Nach unten geschoben, scrollt bei Bedarf ein) -->
-   <div class="section-box" style="padding: 12px 18px; margin-top: auto;">
-     <div class="section-title" style="font-size: 14px; margin-bottom: 8px; color: #666;"><i class="fa-solid fa-clock-rotate-left"></i> Wurfhistorie</div>
-     <div id="history-log" style="font-family:monospace; font-size:12px; overflow-y:auto; background:#07090f; padding:8px; border-radius:4px; max-height: 90px; color: #555;">
-       Warte auf Trainingsstart...
-     </div>
-   </div>
+ <!-- 4. SPIELER-DATENBANK (Das Textfeld unter dem Button-Dreierpack) -->
+ <div class="section-box" style="margin-bottom: 18px; padding: 15px 18px;">
+ <div class="section-title" style="font-size: 16px; margin-bottom: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;"><i class="fa-solid fa-users"></i> Spieler-Datenbank</div>
+ <label style="font-size: 12px; margin-bottom: 5px; color: #aaa;">Namen untereinander eintragen (ein Name pro Zeile):</label>
+ <textarea id="player-database-input" oninput="speichereSpielerAusTexteingabe()" style="width: 100%; height: 150px; background: #111424; border: 1px solid #2d3559; color: #fff; padding: 10px; border-radius: 5px; font-family: inherit; font-size: 14px; resize: vertical; margin: 0;"></textarea>
+ </div>
+
+ <!-- 5. WURFHISTORIE (Bleibt ganz unten kleben) -->
+ <div class="section-box" style="padding: 12px 18px; margin-top: auto;">
+ <div class="section-title" style="font-size: 14px; margin-bottom: 8px; 
+color: #666;"><i class="fa-solid fa-clock-rotate-left"></i> Wurfhistorie</div>
+ <div id="history-log" style="font-family:monospace; font-size:12px; 
+overflow-y:auto; background:#07090f; padding:8px; border-radius:4px; max-height:
+90px; color: #555;">
+ Warte auf Trainingsstart...
+ </div>
+ </div>
+
  </div>
 
 
@@ -709,7 +732,7 @@ body {
  <!-- MITTIGER ÄNDERUNGS-ZEITSTEMPEL MIT UHRZEIT -->
  <div id="app-version-date" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Orbitron', sans-serif; font-size: 22px; font-weight: bold; color: var(--accent-cyan); text-shadow: 0 0 15px rgba(0, 240, 255, 0.6); background: rgba(5, 7, 15, 0.85); padding: 15px 30px; border: 2px dashed var(--accent-cyan); border-radius: 10px; z-index: 10; pointer-events: none; letter-spacing: 2px; text-align: center; box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);">
    <i class="fa-solid fa-code-branch" style="margin-right: 10px;"></i> GranBoard 3D Pro<br>
-   <span style="font-size: 14px; color: #aaa; font-weight: normal; display: block; margin-top: 5px;">Letztes Update: 06.11.2026 - 20:35 Uhr</span>
+   <span style="font-size: 14px; color: #aaa; font-weight: normal; display: block; margin-top: 5px;">Letztes Update: 07.11.2026 - 20:35 Uhr</span>
  </div>
 
 
@@ -842,38 +865,45 @@ body {
 
 
  // Erweiterte Datenstruktur für bis zu 30 Stammspieler + dynamische Gäste
- let membersData = [
-     { id: 0, name: "Rosenberger, Stefan", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 1, name: "Ben", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 2, name: "Chris", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 3, name: "Dani", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 4, name: "Elias", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 5, name: "Felix", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 6, name: "Gabi", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 7, name: "Hassan", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 8, name: "Spieler 9", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 9, name: "Spieler 10", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 10, name: "Spieler 11", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 11, name: "Spieler 12", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 12, name: "Spieler 13", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 13, name: "Spieler 14", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 14, name: "Spieler 15", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 15, name: "Spieler 16", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 16, name: "Spieler 17", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 17, name: "Spieler 18", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 18, name: "Spieler 19", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 19, name: "Spieler 20", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 20, name: "Spieler 21", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 21, name: "Spieler 22", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 22, name: "Spieler 23", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 23, name: "Spieler 24", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 24, name: "Spieler 25", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 25, name: "Spieler 26", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 26, name: "Spieler 27", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 27, name: "Spieler 28", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 28, name: "Spieler 29", x01: 0, cricket: 0, maxicricket: 0, split: 0 },
-     { id: 29, name: "Spieler 30", x01: 0, cricket: 0, maxicricket: 0, split: 0 }
- ]; 
+// Beim Start: Vorhandene Spieler laden oder Standard-Duo vorgeben
+let gespeicherteNamen = localStorage.getItem('granboard_player_names') || "Rosenberger, Stefan\nBen\nChris\nDani";
+let membersData = [];
+
+// Funktion, um den Text aus der Textbox in echte Spieldaten umzuwandeln
+function aktualisiereMembersDataAusText(text) {
+  const zeilen = text.split('\n');
+  membersData = [];
+  let aktuellerId = 0;
+
+  zeilen.forEach(zeile => {
+    const bereinigterName = zeile.trim();
+    if (bereinigterName !== "") {
+      membersData.push({
+        id: aktuellerId,
+        name: bereinigterName,
+        x01: 0, cricket: 0, maxicricket: 0, split: 0
+      });
+      aktuellerId++;
+    }
+  });
+}
+
+// Wird aufgerufen, wenn du in die Textbox tippst
+function speichereSpielerAusTexteingabe() {
+  const text = document.getElementById('player-database-input').value;
+  localStorage.setItem('granboard_player_names', text);
+  aktualisiereMembersDataAusText(text);
+}
+
+// Initialisierung beim Laden der Website
+document.addEventListener("DOMContentLoaded", () => {
+  const inputFeld = document.getElementById('player-database-input');
+  if (inputFeld) {
+    inputFeld.value = gespeicherteNamen;
+  }
+  aktualisiereMembersDataAusText(gespeicherteNamen);
+});
+ 
  let activePlayers = [];
  let currentPlayerIdx = 0;
  let dartsThrownThisTurn = 0;
@@ -943,7 +973,8 @@ font-size:12px; font-weight:bold; margin-top:4px; display:block;">[ ${statsText}
 ]</span>`;
  
  // Standardmäßig die ersten beiden Spieler beim allerersten Start anhaken (Team 1 und Team 2 initialisieren)
- let wasChecked = idx < 2; 
+ let wasChecked = false; // Startet standardmäßig komplett ohne Haken
+ 
  let initialTeam = (idx % 2 === 0) ? 1 : 2;
 
  listContainer.innerHTML += `
@@ -1678,34 +1709,43 @@ if ((currentSessionMode === 'x01' || currentSessionMode === 'x01_teams') && hit.
       let allClosed = Object.values(p.cricketHits).every(val => val >= 3);
       let highestScore = Math.max(...activePlayers.map(player => player.score));
  
-      if(allClosed && p.score >= highestScore) {
-        let masterMember = membersData[p.memberId];
-        if (masterMember) {
-          if (currentSessionMode === 'maxicricket') masterMember.maxicricket++;
-          else masterMember.cricket++;
-        }
- 
-        logHistory(` 🎉 ${p.name} gewinnt das Cricket-Leg!`);
-        showBanner(`${p.name} SIEGT!`);
-        renderMembersListSidebar();
- 
-        let winSound = localStorage.getItem('mkk_sound_win') || 'Gewonnen.wav';
-        new Audio(winSound).play().catch(e => {});
- 
-        setTimeout(() => {
-          hideBanner();
-          activePlayers.forEach(player => {
-            player.score = 0;
-            player.totalDarts = 0;
-            player.cricketHits = (currentSessionMode === 'maxicricket') ? 
-              {10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0,18:0,19:0,20:0,25:0} : 
-              {15:0,16:0,17:0,18:0,19:0,20:0,25:0};
-          });
-          currentPlayerIdx = 0; dartsThrownThisTurn = 0;
-          updateHud();
-        }, 5000);
-        return;
-      }
+ if(allClosed && p.score >= highestScore) {
+  let masterMember = membersData[p.memberId];
+  if (masterMember) {
+    if (currentSessionMode === 'maxicricket') masterMember.maxicricket++;
+    else masterMember.cricket++;
+  }
+  logHistory(` 🏆 ${p.name} gewinnt das Cricket-Leg!`); 
+  showBanner(`${p.name} SIEGT!`);
+  renderMembersListSidebar();
+  
+  // 1. Sound sofort abspielen, solange das Sieger-Popup aktiv ist
+  let winSound = localStorage.getItem('mkk_sound_win') || 'Gewonnen.wav';
+  new Audio(winSound).play().catch(e => console.log("Audio blockiert:", e));
+  
+  // 2. ERST NACH 5 SEKUNDEN das Spiel zurücksetzen und das HUD leeren
+  setTimeout(() => {
+    hideBanner();
+    
+    // Das Zurücksetzen der Werte MUSS hier drinnen stehen, 
+    // damit es nicht das aktuelle Sieger-Popup visuell zerstört!
+    activePlayers.forEach(player => {
+      player.score = 0;
+      player.totalDarts = 0;
+      player.cricketHits = (currentSessionMode === 'maxicricket') ? 
+        {10:0,11:0,12:0,13:0,14:0,15:0,16:0,17:0,18:0,19:0,20:0,25:0} : 
+        {15:0,16:0,17:0,18:0,19:0,20:0,25:0};
+    });
+    currentPlayerIdx = 0; 
+    dartsThrownThisTurn = 0;
+    
+    // Erst jetzt, nach 5 Sekunden, schalten wir auf das neue, leere Spiel um
+    updateHud();
+  }, 5000);
+  
+  return;
+}
+
     }
   }
   // =========================================================================
@@ -2344,41 +2384,79 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-// =========================================================================
-// NEU: KASSEN-ABRECHNUNGS-FUNKTION (LIVE-BERECHNUNG)
-// =========================================================================
 function zeigeKassenAbrechnung() {
-    if (activePlayers.length === 0) {
-        return alert("Es läuft aktuell kein Training oder es wurden keine Spieler ausgewählt!");
-    }
+  // Falls die Abrechnung in einem Modal oder einem Alert-Bereich angezeigt wird, 
+  // bauen wir hier eine dynamische Liste mit Lösch-Buttons pro Spieler.
+  
+  let html = `<div style="font-family:'Orbitron', sans-serif; color:#fff; padding:10px;">
+                <h3 style="color:var(--accent-gold); margin-bottom:15px; text-transform:uppercase;">Kassen-Abrechnung</h3>
+                <div style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto;">`;
+  
+  let gesamtKasse = 0;
 
-    let abrechnungsText = "=== 🎯 GRANBOARD STRAFKASSE ABRECHNUNG ===\n\n";
-    let gesamtKasse = 0;
+  activePlayers.forEach((p, idx) => {
+    // Berechnung der Strafen (Misses: 0,20€, LowScores: 0,10€, Spielgebühr: 0,50€)
+    let missesKosten = p.penalties.misses * 0.20;
+    let lowKosten = p.penalties.lowScores * 0.10;
+    let spielGebuehr = p.penalties.gamesCount * 0.50;
+    let summeSpieler = missesKosten + lowKosten + spielGebuehr;
+    gesamtKasse += summeSpieler;
 
-    activePlayers.forEach(p => {
-        let kostenMisses = p.penalties.misses * 0.20;
-        let kostenLow = p.penalties.lowScores * 0.10;
-        let kostenSpiele = p.penalties.gamesCount * 0.50;
-        let spielerTotal = kostenMisses + kostenLow + kostenSpiele;
-        gesamtKasse += spielerTotal;
+    html += `
+      <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); padding:8px 12px; border-radius:6px;">
+        <div>
+          <span style="font-weight:bold; color:var(--accent-cyan);">${p.name}</span><br>
+          <span style="font-size:11px; color:#aaa;">Fehlwürfe: ${p.penalties.misses} | Low: ${p.penalties.lowScores} | Spiele: ${p.penalties.gamesCount}</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:15px;">
+          <span style="font-weight:900; color:var(--accent-green);">${summeSpieler.toFixed(2)} €</span>
+          <!-- Der Lösch-Button für diesen einzelnen Spieler -->
+          <button type="button" onclick="setzeSpielerStrafeZurueck(${idx})" style="background:#ff3333; color:#fff; border:none; border-radius:4px; padding:4px 8px; font-weight:bold; cursor:pointer; font-size:12px;">X</button>
+        </div>
+      </div>`;
+  });
 
-        abrechnungsText += `👤 SPIELER: ${p.name}\n`;
-        abrechnungsText += `  • Spiele-Gebühr (${p.penalties.gamesCount}x): ${kostenSpiele.toFixed(2)} €\n`;
-        abrechnungsText += `  • Fehlwürfe (${p.penalties.misses}x): ${kostenMisses.toFixed(2)} €\n`;
-        abrechnungsText += `  • Runden < 40 Pkt (${p.penalties.lowScores}x): ${kostenLow.toFixed(2)} €\n`;
-        abrechnungsText += `  > JZW-SCHULDEN: ${spielerTotal.toFixed(2)} €\n`;
-        abrechnungsText += `----------------------------------------\n`;
-    });
+  html += `</div>
+           <div style="margin-top:20px; padding-top:10px; border-top:2px solid var(--accent-cyan); text-align:right; font-size:18px; font-weight:900;">
+             GESAMT: <span style="color:var(--accent-gold);">${gesamtKasse.toFixed(2)} €</span>
+           </div>
+           <button onclick="schliesseKassenModal()" class="btn-primary" style="margin-top:15px; width:100%; padding:10px;">Schließen</button>
+           </div>`;
 
-    abrechnungsText += `\n💰 GESAMT-KASSENSTAND: ${gesamtKasse.toFixed(2)} €`;
-    
-    alert(abrechnungsText);
+  // Hier wird das HTML in dein bestehendes Modal-Fenster injiziert
+  // Falls du ein Standard-Overlay nutzt, passen wir das hier an dein System an:
+  const modalBody = document.getElementById('members-list'); // Temporäre Nutzung des großen Modals für die Anzeige
+  if(modalBody) {
+    document.getElementById('player-selection-modal').classList.add('open');
+    modalBody.innerHTML = html;
+  }
+}
+
+// Hilfsfunktion zum Schließen des Abrechnungsfensters
+function schliesseKassenModal() {
+  document.getElementById('player-selection-modal').classList.remove('open');
+  renderMembersListSidebar(); // Setzt die normale Spielerliste wieder zurück
 }
 
 
 
 
-
+// Setzt die Strafen für einen einzelnen Spieler per Knopfdruck zurück
+function setzeSpielerStrafeZurueck(index) {
+  if (activePlayers[index]) {
+    const p = activePlayers[index];
+    
+    // Alle Zähler für die Strafkasse dieses Spielers auf 0 setzen
+    p.penalties.misses = 0;
+    p.penalties.lowScores = 0;
+    p.penalties.gamesCount = 0;
+    
+    logHistory(`Kasse für ${p.name} ausgeglichen (auf 0 gesetzt).`);
+    
+    // Die Ansicht sofort aktualisieren, damit das Geld verschwindet
+    zeigeKassenAbrechnung();
+  }
+}
 
 
 
