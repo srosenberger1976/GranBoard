@@ -646,12 +646,6 @@ body {
          <option value="double">Double In</option>
          <option value="master">Master In</option>
        </select>
-       <label style="font-size: 14px; margin-bottom: 6px; font-weight: bold; color: #aaa;">Auswurf (Out)</label>
-       <select id="x01-out" style="padding: 10px; font-size: 16px; margin-bottom: 6px; font-family: 'Orbitron', sans-serif;">
-         <option value="open">Open Out</option>
-         <option value="double" selected>Double Out</option>
-         <option value="master">Master Out</option>
-       </select>
 
 
 
@@ -1710,29 +1704,42 @@ if ((currentSessionMode === 'x01' || currentSessionMode === 'x01_teams') && hit.
   let isX01Bust = false;
   let isX01Win = false;
 
-  // =========================================================================
-  // --- 1. CRICKET & MAXI-CRICKET LOGIK MIT PUNKTEN ---
-  // =========================================================================
-  if(currentSessionMode === 'cricket' || currentSessionMode === 'maxicricket') {
-    if(p.cricketHits[hit.v] !== undefined) {
-      let remainingMultiplier = hit.m;
-      let oldHits = p.cricketHits[hit.v];
+// ANKER-ANFANG (Diese Zeile bleibt stehen)
+ // =========================================================================
+ // --- 1. CRICKET & MAXI-CRICKET LOGIK MIT PUNKTEN ---
+ // =========================================================================
+ if(currentSessionMode === 'cricket' || currentSessionMode === 'maxicricket') {
+ if(p.cricketHits[hit.v] !== undefined) {
+
+// NEUER BEREICH (Double Bull gibt im Cricket immer 50 Punkte + 2 Marks)
+ let remainingMultiplier = hit.m;
+ let oldHits = p.cricketHits[hit.v];
+ p.cricketHits[hit.v] = Math.min(3, oldHits + remainingMultiplier);
  
-      p.cricketHits[hit.v] = Math.min(3, oldHits + remainingMultiplier);
- 
-      let hitsBeforeScoring = 3 - oldHits;
-      if (remainingMultiplier > hitsBeforeScoring) {
-        let scoringMultiplier = remainingMultiplier - hitsBeforeScoring;
-        let opponentsHaveItOpen = activePlayers.some((opp, idx) => idx !== currentPlayerIdx && opp.cricketHits[hit.v] < 3);
- 
-        if (opponentsHaveItOpen) {
-          p.score += (hit.v * scoringMultiplier);
-          logHistory(`${p.name} punktet! +${hit.v * scoringMultiplier} PTS auf der ${hit.v}`);
-        }
-      }
- 
-      let allClosed = Object.values(p.cricketHits).every(val => val >= 3);
-      let highestScore = Math.max(...activePlayers.map(player => player.score));
+ let opponentsHaveItOpen = activePlayers.some((opp, idx) => idx !== currentPlayerIdx && opp.cricketHits[hit.v] < 3);
+
+ if (hit.v === 25 && hit.m === 2) {
+   // Double Bull gibt sofort 50 Punkte, solange ein Gegner Bull noch offen hat
+   if (opponentsHaveItOpen) {
+     p.score += 50;
+     logHistory(`${p.name} punktet! +50 PTS auf Double Bull`);
+   }
+ } else {
+   // Normale Cricket-Logik für alle anderen Zahlen & Single Bull
+   let hitsBeforeScoring = 3 - oldHits;
+   if (remainingMultiplier > hitsBeforeScoring) {
+     let scoringMultiplier = remainingMultiplier - hitsBeforeScoring;
+     if (opponentsHaveItOpen) {
+       p.score += (hit.v * scoringMultiplier);
+       logHistory(`${p.name} punktet! +${hit.v * scoringMultiplier} PTS auf der ${hit.v}`);
+     }
+   }
+ }
+
+// ANKER-ENDE (Ab hier geht dein Code normal weiter)
+ let allClosed = Object.values(p.cricketHits).every(val => val >= 3);
+ let highestScore = Math.max(...activePlayers.map(player => player.score));
+
  
  if(allClosed && p.score >= highestScore) {
   let masterMember = membersData[p.memberId];
