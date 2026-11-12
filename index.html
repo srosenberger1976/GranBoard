@@ -1711,25 +1711,23 @@ if ((currentSessionMode === 'x01' || currentSessionMode === 'x01_teams') && hit.
  if(currentSessionMode === 'cricket' || currentSessionMode === 'maxicricket') {
  if(p.cricketHits[hit.v] !== undefined) {
 
-// NEUER BEREICH (Double Bull gibt im Cricket immer 50 Punkte + 2 Marks)
+// BEREINIGTER BEREICH (Punkte erst NACH dem 3. Treffer!)
  let remainingMultiplier = hit.m;
  let oldHits = p.cricketHits[hit.v];
  p.cricketHits[hit.v] = Math.min(3, oldHits + remainingMultiplier);
  
- let opponentsHaveItOpen = activePlayers.some((opp, idx) => idx !== currentPlayerIdx && opp.cricketHits[hit.v] < 3);
-
- if (hit.v === 25 && hit.m === 2) {
-   // Double Bull gibt sofort 50 Punkte, solange ein Gegner Bull noch offen hat
+ let hitsBeforeScoring = 3 - oldHits;
+ if (remainingMultiplier > hitsBeforeScoring) {
+   let scoringMultiplier = remainingMultiplier - hitsBeforeScoring;
+   let opponentsHaveItOpen = activePlayers.some((opp, idx) => idx !== currentPlayerIdx && opp.cricketHits[hit.v] < 3);
+   
    if (opponentsHaveItOpen) {
-     p.score += 50;
-     logHistory(`${p.name} punktet! +50 PTS auf Double Bull`);
-   }
- } else {
-   // Normale Cricket-Logik für alle anderen Zahlen & Single Bull
-   let hitsBeforeScoring = 3 - oldHits;
-   if (remainingMultiplier > hitsBeforeScoring) {
-     let scoringMultiplier = remainingMultiplier - hitsBeforeScoring;
-     if (opponentsHaveItOpen) {
+     // Wenn Bull bereits komplett geschlossen war (oldHits === 3) und ein Double Bull getroffen wird -> 50 Punkte
+     if (hit.v === 25 && hit.m === 2 && oldHits === 3) {
+       p.score += 50;
+       logHistory(`${p.name} punktet! +50 PTS auf Double Bull`);
+     } else {
+       // Normale Berechnung (z.B. wenn bei 2 Marks ein Double Bull trifft: 1 Mark schließt auf 3, 1 Mark = 25 Punkte)
        p.score += (hit.v * scoringMultiplier);
        logHistory(`${p.name} punktet! +${hit.v * scoringMultiplier} PTS auf der ${hit.v}`);
      }
