@@ -652,7 +652,25 @@ body {
          <option value="double" selected>Double Out</option>
          <option value="master">Master Out</option>
        </select>
-     </div>
+
+
+
+
+    <label style="font-size: 14px; margin-bottom: 6px; font-weight: bold; color: #aaa;">Auswurf (Out)</label>
+    <select id="x01-out" style="padding: 10px; font-size: 16px; margin-bottom: 6px; font-family: 'Orbitron', sans-serif;">
+        <option value="open">Open Out</option>
+        <option value="double" selected>Double Out</option>
+        <option value="master">Master Out</option>
+    </select>
+
+    <!-- HIER NEU EINFÜGEN: -->
+    <label style="font-size: 14px; margin-bottom: 6px; font-weight: bold; color: #aaa;">Bull-Wertung</label>
+    <select id="x01-bull" style="padding: 10px; font-size: 16px; margin-bottom: 6px; font-family: 'Orbitron', sans-serif;">
+        <option value="split" selected>Standard (25 / 50)</option>
+        <option value="50">Bullshooter (50 / 50)</option>
+    </select>
+</div>
+
      
      <!-- SPLIT SCORE OPTIONEN -->
      <div id="split-options" style="display: none;">
@@ -1643,10 +1661,17 @@ function updateHud() {
 
 
 function processHit(matrixKey) {
-  if(activePlayers.length === 0 || isProcessingTurnChange) return;
-  const hit = EXACT_BOARD_MATRIX[matrixKey] || EXACT_BOARD_MATRIX["MISS"];
-  const p = activePlayers[currentPlayerIdx];
-  const points = hit.v * hit.m;
+    if(activePlayers.length === 0 || isProcessingTurnChange) return;
+    const hit = EXACT_BOARD_MATRIX[matrixKey] || EXACT_BOARD_MATRIX["MISS"];
+    const p = activePlayers[currentPlayerIdx];
+
+    // DIESEN BLOCK STATT "const points = hit.v * hit.m;" EINFÜGEN:
+    const bullMode = document.getElementById('x01-bull')?.value || 'split';
+    let points = hit.v * hit.m;
+    if (hit.v === 25 && hit.m === 1 && bullMode === '50') {
+        points = 50;
+    }
+
 
 
 // --- NEU: FEHLWURF-STRAFE PRÜFEN ---
@@ -1772,9 +1797,12 @@ if ((currentSessionMode === 'x01' || currentSessionMode === 'x01_teams') && hit.
     let potentialScore = p.score - pointsToSubtract;
  
     if (pointsToSubtract > 0) {
-      if (potentialScore === 0) {
-        if (outMode === 'double' && hit.m !== 2) isX01Bust = true;
-        if (outMode === 'master' && hit.m < 2) isX01Bust = true;
+        if (potentialScore === 0) {
+            // DIESE DREI ZEILEN STATT DER ALTEN "outMode"-PRÜFUNG EINFÜGEN:
+            const isBullshooterBull = (hit.v === 25 && bullMode === '50');
+            if (outMode === 'double' && hit.m !== 2 && !isBullshooterBull) isX01Bust = true;
+            if (outMode === 'master' && hit.m < 2 && !isBullshooterBull) isX01Bust = true;
+
         if (!isX01Bust && currentSessionMode === 'x01_teams') {
           let myTeamScore = 0;
           let opponentTeamScore = 0;
